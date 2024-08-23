@@ -28,13 +28,16 @@ class RouterProtocol(BaseProtocol):
 
         # Parse message header
         msg = Message.from_bytes(data, self.game_bf_key)
-        self.logger.debug(f'-> {msg}')
 
         if msg.header.size >= len(data):
             self.handle_message(msg)
             return
 
+        self.handle_message_bundle(msg)
+
     def handle_message(self, msg: Message) -> None:
+        self.logger.debug(f'-> {msg}')
+
         # Reset packet buffer
         self.buffer = self.buffer[msg.header.size:]
 
