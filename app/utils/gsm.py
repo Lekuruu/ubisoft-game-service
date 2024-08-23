@@ -107,6 +107,9 @@ class GSMResponse:
         # Swap sender and receiver
         self.header.sender, self.header.receiver = self.header.receiver, self.header.sender
 
+        # Initialize response data
+        self.initialize()
+
     def __bytes__(self):
         if self.data is None:
             return bytes(self.header)
@@ -127,11 +130,13 @@ class GSMResponse:
         bts += bytes(data)
         return bytes(bts)
 
+    def initialize(self) -> None:
+        ...
+
 @dataclass
 class KeyExchangeResponse(GSMResponse):
     """Response to `KEY_EXCHANGE` messages"""
-    def __post_init__(self):
-        super().__post_init__()
+    def initialize(self):
         assert self.header.type == MessageType.KEY_EXCHANGE
         request_id = int(self.data.lst[0])
 
@@ -157,44 +162,46 @@ class KeyExchangeResponse(GSMResponse):
             case _:
                 raise BufferError(f"KEY_EXCHANGE request with id={request_id}.")
 
+@dataclass
 class LoginResponse(GSMResponse):
     """Response to `LOGIN` messages"""
-    def __init__(self, req: Message):
-        assert req.header.type == MessageType.LOGIN
-        super().__init__(req)
+    def initialize(self):
+        assert self.header.type == MessageType.LOGIN
         self.header.property = MessageProperty.GS
         self.header.type = MessageType.GSSUCCESS
         msg_id = MessageType.LOGIN.value
         self.data = List([msg_id.to_bytes(1, 'little')])
 
+@dataclass
 class JoinWaitModuleResponse(GSMResponse):
     """Response to `JOINWAITMODULE` messages"""
-    def __init__(self, req: Message, wait_module: tuple[str, int]):
-        assert req.header.type == MessageType.JOINWAITMODULE
-        super().__init__(req)
+    wait_module: Tuple[str, int]
+
+    def initialize(self):
+        assert self.header.type == MessageType.JOINWAITMODULE
         self.header.property = MessageProperty.GS
         self.header.type = MessageType.GSSUCCESS
         msg_id = MessageType.JOINWAITMODULE.value
         self.data = List([
             msg_id.to_bytes(1, 'little'),
-            [wait_module[0], serialization.write_u32(wait_module[1])]
+            [self.wait_module[0], serialization.write_u32(self.wait_module[1])]
         ])
 
+@dataclass
 class LoginWaitModuleResponse(GSMResponse):
     """Response to `LOGINWAITMODULE` messages"""
-    def __init__(self, req: Message):
-        assert req.header.type == MessageType.LOGINWAITMODULE
-        super().__init__(req)
+    def initialize(self):
+        assert self.header.type == MessageType.LOGINWAITMODULE
         self.header.property = MessageProperty.GS
         self.header.type = MessageType.GSSUCCESS
         msg_id = MessageType.LOGINWAITMODULE.value
         self.data = List([msg_id.to_bytes(1, 'little')])
 
+@dataclass
 class PlayerInfoResponse(GSMResponse):
     """Response to `PLAYERINFO` messages"""
-    def __init__(self, req: Message):
-        assert req.header.type == MessageType.PLAYERINFO
-        super().__init__(req)
+    def initialize(self):
+        assert self.header.type == MessageType.PLAYERINFO
         self.header.property = MessageProperty.GS
         self.header.type = MessageType.GSSUCCESS
         msg_id = MessageType.PLAYERINFO.value
