@@ -17,7 +17,7 @@ class GameServiceInit(Resource):
         return request.args.get(name.encode(), [b''])[0].decode()
 
     def game_config(self, product: str, user: str) -> str:
-        games = app.config['gsconnect']['Games']
+        games = app.config['services']['GSConnect']['Games']
 
         if not (config_path := games.get(product)):
             self.logger.warning(f'Unsupported product: "{product}"')
