@@ -45,3 +45,14 @@ def key_exchange(message: Message, client: RouterProtocol):
             raise NotImplementedError(f"Unknown requestId: {request_id}")
 
     client.send_message(response)
+
+@register(MessageType.LOGIN)
+def do_login(message: Message, client: RouterProtocol):
+    # TODO: Do the actual login
+    username = message.data.lst[0]
+    password = message.data.lst[1]
+    game = message.data.lst[2]
+    flag = message.data.lst[3] # TODO: ?
+
+    response = gsm.LoginResponse(client, message.header, message.data)
+    client.send_message(response)
