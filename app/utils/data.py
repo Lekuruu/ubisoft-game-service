@@ -63,6 +63,9 @@ class List(Data):
     def __str__(self):
         return str(self.lst)
     
+    def __repr__(self):
+        return str(self.lst)
+
     def __bytes__(self):
         bts = bytearray([0x5B])
         for data in self.lst:
