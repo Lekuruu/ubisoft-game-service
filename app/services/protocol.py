@@ -68,7 +68,7 @@ class BaseProtocol(Protocol):
         try:
             self.busy = True
             self.buffer += data
-            self.on_data(data)
+            self.on_data(self.buffer)
         except Exception as e:
             self.logger.error(
                 f'Error while processing data: {e}',
