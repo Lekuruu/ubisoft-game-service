@@ -10,7 +10,7 @@ class GameServiceInit(Resource):
 
     def __init__(self):
         self.children = {}
-        self.logger = logging.getLogger(__name__)
+        self.logger = logging.getLogger('GSConnect')
 
     @staticmethod
     def argument(name: str, request: Request) -> str:
