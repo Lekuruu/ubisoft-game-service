@@ -48,7 +48,7 @@ class RouterProtocol(BaseProtocol):
         return handler(msg, self)
 
     def handle_message_bundle(self, msg: Message) -> None:
-        bundle = GSMessageBundle(
+        bundle = GSMessageBundle.from_bytes(
             msg,
             self.buffer,
             self.game_bf_key
