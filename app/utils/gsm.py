@@ -100,6 +100,10 @@ class GSMResponse:
     client: router.RouterProtocol
     data: List | None = None
 
+    def __post_init__(self):
+        # Swap sender and receiver
+        self.header.sender, self.header.receiver = self.header.receiver, self.header.sender
+
     def __bytes__(self):
         if self.data is None:
             return bytes(self.header)
