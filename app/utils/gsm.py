@@ -60,7 +60,7 @@ class Message:
 
     @classmethod
     def from_bytes(cls, bts: bytes, blowfish_key: bytes):
-        header = GSMessageHeader(bts[:GSMSG_HEADER_SIZE])
+        header = GSMessageHeader.from_bytes(bts[:GSMSG_HEADER_SIZE])
         data = None
 
         match header.property:
