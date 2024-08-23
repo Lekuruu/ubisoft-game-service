@@ -33,13 +33,13 @@ def key_exchange(message: Message, client: RouterProtocol):
             pub_key, priv_key = pkc.keygen()
             client.sv_pubkey = pub_key
             client.sv_privkey = priv_key
-            response = gsm.KeyExchangeResponse(message.header, client, message.data)
+            response = gsm.KeyExchangeResponse(client, message.header, message.data)
 
         case '2':
             enc_bf_key = bytes(message.data.lst[1][2])
             bf_key = pkc.decrypt(enc_bf_key, client.sv_privkey)
             client.game_bf_key = bf_key
-            response = gsm.KeyExchangeResponse(message.header, client, message.data)
+            response = gsm.KeyExchangeResponse(client, message.header, message.data)
 
         case _:
             raise NotImplementedError(f"Unknown requestId: {request_id}")

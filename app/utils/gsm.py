@@ -96,9 +96,9 @@ class GSMessageBundle:
 @dataclass
 class GSMResponse:
     """Base class for GS message responses"""
+    client: RouterProtocol
     header: GSMessageHeader
-    client: router.RouterProtocol
-    data: List | None = None
+    data: List
 
     def __post_init__(self):
         # Swap sender and receiver
