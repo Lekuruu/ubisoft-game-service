@@ -1,2 +1,2 @@
 
-from .gsm import MessageType, MessageTarget, MessageProperty
+from .gsm import MessageType, MessageTarget, MessageProperty, GSMSG_HEADER_SIZE
