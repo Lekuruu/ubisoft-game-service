@@ -128,6 +128,7 @@ class GSMResponse:
 class KeyExchangeResponse(GSMResponse):
     """Response to `KEY_EXCHANGE` messages"""
     def __post_init__(self):
+        super().__post_init__()
         assert self.header.type == MessageType.KEY_EXCHANGE
         request_id = int(self.data.lst[0])
 
