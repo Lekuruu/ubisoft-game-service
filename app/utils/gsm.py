@@ -1,19 +1,22 @@
 
 from __future__ import annotations
-from typing import List as TypedList
 from dataclasses import dataclass
+from typing import List as TypedList
+from typing import Tuple, TYPE_CHECKING
 
 from app.utils import serialization, gsxor, pkc
 from app.utils.pkc import RsaPublicKey
 from app.utils.blowfish import Cipher
 from app.utils.data import List
-from app.services import router
 from app.constants import (
     GSMSG_HEADER_SIZE,
     MessageProperty,
     MessageTarget,
     MessageType
 )
+
+if TYPE_CHECKING:
+    from app.services.protocol import RouterProtocol
 
 @dataclass
 class GSMessageHeader:
