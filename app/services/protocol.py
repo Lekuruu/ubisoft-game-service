@@ -19,7 +19,10 @@ class BaseProtocol(Protocol):
     def __init__(self, address: IPAddress) -> None:
         self.host = address.host
         self.port = address.port
+
         self.logger = logging.getLogger(self.host)
+        self.buffer = bytearray()
+        self.busy = False
 
     def on_connect(self) -> None:
         ...
@@ -44,9 +47,6 @@ class BaseProtocol(Protocol):
         self.transport.loseConnection()
         self.on_disconnect(ConnectionDone())
 
-    def dataReceived(self, data: bytes) -> None:
-        self.on_data(data)
-
     def connectionMade(self):
         self.logger.debug(f'-> <{self.host}:{self.port}>')
         self.on_connect()
@@ -59,3 +59,20 @@ class BaseProtocol(Protocol):
 
         self.logger.warning(f'-> Lost connection "{reason.getErrorMessage()}".')
         self.on_disconnect(reason)
+
+    def dataReceived(self, data: bytes) -> None:
+        if self.busy:
+            self.buffer += data
+            return
+
+        try:
+            self.busy = True
+            self.buffer += data
+            self.on_data(data)
+        except Exception as e:
+            self.logger.error(
+                f'Error while processing data: {e}',
+                exc_info=True
+            )
+        finally:
+            self.busy = False
