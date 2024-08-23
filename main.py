@@ -6,6 +6,7 @@ from app.logging import ConsoleLogger
 from twisted.internet import reactor
 
 import logging
+import app
 
 logging.basicConfig(
     level=logging.DEBUG,
@@ -13,8 +14,8 @@ logging.basicConfig(
 )
 
 def main():
-    HttpServer('GSConnect', 80, GSConnect()).start()
-    Server('Router', 40000, RouterProtocol).start()
+    HttpServer('GSConnect', app.config['services']['GSConnect']['Port'], GSConnect()).start()
+    Server('Router', app.config['services']['Router']['Port'], RouterProtocol).start()
     reactor.run()
 
 if __name__ == '__main__':

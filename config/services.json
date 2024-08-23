@@ -1,5 +1,6 @@
 {
     "GSConnect": {
+        "Port": 80,
         "Games": {
             "SPLINTERCELL3PCADVERS": "./config/games/sp3.ini",
             "SPLINTERCELL3PCCOOP": "./config/games/sp3.ini",
@@ -7,5 +8,8 @@
             "SPLINTERCELL3PC": "./config/games/sp3.ini",
             "HEROES_5": "./config/games/homm5.ini"
         }
+    },
+    "Router": {
+        "Port": 40000
     }
 }
