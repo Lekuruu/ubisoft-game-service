@@ -17,6 +17,10 @@ class RouterProtocol(BaseProtocol):
         self.game_bf_key: bytes | None = None
         self.sv_bf_key: bytes | None = None
 
+    def send_message(self, msg: Message) -> None:
+        self.logger.debug(f'<- {msg}')
+        self.send(bytes(msg))
+
     def on_data(self, data: bytes) -> None:
         if len(data) < GSMSG_HEADER_SIZE:
             # Wait for next buffer

@@ -21,7 +21,7 @@ def register(type: MessageType):
 
 @register(MessageType.STILLALIVE)
 def still_alive(message: Message, client: RouterProtocol):
-    client.send(bytes(message))
+    client.send_message(message)
 
 @register(MessageType.KEY_EXCHANGE)
 def key_exchange(message: Message, client: RouterProtocol):
@@ -44,4 +44,4 @@ def key_exchange(message: Message, client: RouterProtocol):
         case _:
             raise NotImplementedError(f"Unknown requestId: {request_id}")
 
-    client.send(bytes(response))
+    client.send_message(response)
