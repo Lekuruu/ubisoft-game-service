@@ -83,8 +83,8 @@ class GSMessageBundle:
     """Packet containing 2 or more GS messages"""
     messages: TypedList[Message]
 
-    def from_bytes(cls, bts: bytes, blowfish_key: bytes):
-        messages = []
+    def from_bytes(cls, first: Message, bts: bytes, blowfish_key: bytes):
+        messages = [first]
 
         while len(bts) > 0:
             msg = Message.from_bytes(bts, blowfish_key)
