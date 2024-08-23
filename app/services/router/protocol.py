@@ -42,7 +42,7 @@ class RouterProtocol(BaseProtocol):
             self.logger.warning(f'Unsupported message type: "{msg.header.type.name}"')
             return
 
-        return handler(self, msg)
+        return handler(msg, self)
 
     def handle_message_bundle(self, msg: Message) -> None:
         bundle = GSMessageBundle(
