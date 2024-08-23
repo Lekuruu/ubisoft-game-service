@@ -131,6 +131,7 @@ class GSMResponse:
         return bytes(bts)
 
     def initialize(self) -> None:
+        """Initialize response data, implemented by subclasses"""
         ...
 
 @dataclass
