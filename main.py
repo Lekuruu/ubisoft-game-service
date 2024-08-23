@@ -14,8 +14,9 @@ logging.basicConfig(
 )
 
 def main():
-    HttpServer('GSConnect', app.config['services']['GSConnect']['Port'], GSConnect()).start()
-    Server('Router', app.config['services']['Router']['Port'], RouterProtocol).start()
+    Services = app.config['services']
+    HttpServer('GSConnect', Services['GSConnect']['Port'], GSConnect()).start()
+    Server('Router', Services['Router']['Port'], RouterProtocol).start()
     reactor.run()
 
 if __name__ == '__main__':
