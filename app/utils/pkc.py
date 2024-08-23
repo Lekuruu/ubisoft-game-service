@@ -1,5 +1,6 @@
 
-import rsa, utils
+from app.utils import serialization
+import rsa
 
 MAX_RSA_MODULUS_LEN = 128
 """Max length of modulus (n) in bytes."""
@@ -20,17 +21,17 @@ class RsaPublicKey:
     def from_buf(bts: bytes):
         """Reads the public key from a buffer."""
         key = RsaPublicKey(PUBLIC_KEY_LEN, 0, 0)
-        key.bits = utils.read_u32(bts[:4])
-        key.modulus = utils.read_bigint_be(bts[4:MAX_RSA_MODULUS_LEN + 4], MAX_RSA_MODULUS_LEN)
-        key.exponent = utils.read_bigint_be(bts[MAX_RSA_MODULUS_LEN + 4:2 * MAX_RSA_MODULUS_LEN + 4], MAX_RSA_MODULUS_LEN)
+        key.bits = serialization.read_u32(bts[:4])
+        key.modulus = serialization.read_bigint_be(bts[4:MAX_RSA_MODULUS_LEN + 4], MAX_RSA_MODULUS_LEN)
+        key.exponent = serialization.read_bigint_be(bts[MAX_RSA_MODULUS_LEN + 4:2 * MAX_RSA_MODULUS_LEN + 4], MAX_RSA_MODULUS_LEN)
         return key
 
     def __bytes__(self):
         """Writes the public key to a buffer."""
         result = bytearray()
-        result.extend(utils.write_u32(self.bits))
-        result.extend(utils.write_bigint_be(self.modulus, MAX_RSA_MODULUS_LEN))
-        result.extend(utils.write_bigint_be(self.exponent, MAX_RSA_MODULUS_LEN))
+        result.extend(serialization.write_u32(self.bits))
+        result.extend(serialization.write_bigint_be(self.modulus, MAX_RSA_MODULUS_LEN))
+        result.extend(serialization.write_bigint_be(self.exponent, MAX_RSA_MODULUS_LEN))
         return bytes(result)
 
     def to_pubkey(self):
