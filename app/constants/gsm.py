@@ -4,6 +4,8 @@ from enum import IntEnum
 # Game Service Message (GSM) constants, taken from:
 # https://github.com/michal-kapala/gsconnect/blob/master/gsm.py
 
+GSMSG_HEADER_SIZE = 6
+
 class MessageType(IntEnum):
     NEWUSERREQUEST = 1
     CONNECTIONREQUEST = 2
