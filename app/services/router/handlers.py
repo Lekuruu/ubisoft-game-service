@@ -1,12 +1,14 @@
 
 from __future__ import annotations
-from typing import Callable
+from typing import Callable, TYPE_CHECKING
 
-from app.services.router import RouterProtocol
 from app.utils.pkc import RsaPublicKey
 from app.constants import MessageType
 from app.utils.gsm import Message
 from app.utils import pkc, gsm
+
+if TYPE_CHECKING:
+    from app.services.router import RouterProtocol
 
 """Global dictionary to store message handler functions"""
 MessageTypeHandlers = {}
