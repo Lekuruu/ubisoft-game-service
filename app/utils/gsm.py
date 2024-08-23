@@ -111,8 +111,8 @@ class GSMResponse:
 
         match self.header.property:
             case MessageProperty.GS:
-                dl = gsxor.encrypt(bytes(dl))
-                self.header.size = GSMSG_HEADER_SIZE + len(dl)
+                data = gsxor.encrypt(bytes(data))
+                self.header.size = GSMSG_HEADER_SIZE + len(data)
             case MessageProperty.GS_ENCRYPT:
                 raise NotImplementedError("GS_ENCRYPT message serialization unsupported.")
 
@@ -124,7 +124,6 @@ class GSMResponse:
 class KeyExchangeResponse(GSMResponse):
     """Response to `KEY_EXCHANGE` messages"""
     def __post_init__(self):
-        assert self.blowfish_key is not None
         assert self.header.type == MessageType.KEY_EXCHANGE
         request_id = int(self.data.lst[0])
 
