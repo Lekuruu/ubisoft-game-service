@@ -87,3 +87,11 @@ def wm_login(message: Message, client: RouterProtocol):
 
     response = gsm.LoginWaitModuleResponse(client, message.header, message.data)
     client.send_message(response)
+
+@register(MessageType.PLAYERINFO, WaitModuleHandlers)
+def player_info(message: Message, client: RouterProtocol):
+    # TODO: Implement user state management
+    username = message.data.lst[0]
+
+    response = gsm.PlayerInfoResponse(client, message.header, message.data)
+    client.send_message(response)
