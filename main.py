@@ -45,7 +45,6 @@ def listen_udp(port: int, protocol: DatagramProtocol) -> None:
 def main() -> None:
     Services = app.config['services']
     listen_http(Services['GSConnect']['Port'], GSConnect)
-    listen_tcp(Services['Router']["WaitModule"]['Port'], RouterProtocol)
     listen_tcp(Services['Router']['Port'], RouterProtocol)
     listen_udp(Services['CDKey']['Port'], CDKeyProtocol)
     reactor.run()
