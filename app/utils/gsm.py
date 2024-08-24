@@ -147,23 +147,23 @@ class KeyExchangeResponse(GSMResponse):
     """Response to `KEY_EXCHANGE` messages"""
     def initialize(self):
         assert self.header.type == MessageType.KEY_EXCHANGE
-        request_id = int(self.data.lst[0])
+        request_id = int(self.data[0])
 
         match request_id:
             case 1:
                 self.data = List(['1', ['1']])
                 pub_key: RsaPublicKey = RsaPublicKey.from_pubkey(self.client.sv_pubkey)
                 buf = bytes(pub_key)
-                self.data.lst[1].append(str(len(buf)))
-                self.data.lst[1].append(buf)
+                self.data[1].append(str(len(buf)))
+                self.data[1].append(buf)
 
             case 2:
                 self.data = List(['2', ['1']])
                 bf_key = Cipher.keygen(16)
                 self.client.sv_bf_key = bf_key
                 enc_key = pkc.encrypt(bf_key, self.client.game_pubkey)
-                self.data.lst[1].append(str(len(enc_key)))
-                self.data.lst[1].append(enc_key)
+                self.data[1].append(str(len(enc_key)))
+                self.data[1].append(enc_key)
 
             case 3:
                 raise NotImplementedError("KEY_EXCHANGE disconnections are not implemented.")

@@ -119,6 +119,18 @@ class List(Data):
         bts.append(0x5D)
         return bytes(bts)
     
+    def __getitem__(self, key):
+        return self.lst[key]
+
+    def __setitem__(self, key, value):
+        self.lst[key] = value
+
+    def __iter__(self):
+        return iter(self.lst)
+
+    def __len__(self):
+        return len(self.lst)
+
     def to_buffer(self, outer = True):
         """Serialize list"""
         result = bytearray(bytes(self))
