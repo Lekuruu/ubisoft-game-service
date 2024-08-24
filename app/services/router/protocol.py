@@ -3,13 +3,13 @@ from __future__ import annotations
 from rsa import PublicKey, PrivateKey
 from typing import Callable, Dict
 
-from app.services.protocol import BaseProtocol, IPAddress
+from app.services.protocol import BaseTcpProtocol, IPAddress
 from app.constants import MessageType, GSMSG_HEADER_SIZE
 from app.utils.gsm import Message, GSMessageBundle
 
 from .handlers import RouterHandlers
 
-class RouterProtocol(BaseProtocol):
+class RouterProtocol(BaseTcpProtocol):
     Handlers: Dict[MessageType, Callable] = RouterHandlers
 
     def __init__(self, address: IPAddress) -> None:

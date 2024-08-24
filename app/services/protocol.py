@@ -10,7 +10,7 @@ import logging
 
 IPAddress = IPv4Address | IPv6Address
 
-class BaseProtocol(Protocol):
+class BaseTcpProtocol(Protocol):
     """
     Base protocol class that includes basic logging, as well as
     providing functions that follow conventional naming schemes.

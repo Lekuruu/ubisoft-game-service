@@ -1,7 +1,7 @@
 
 from __future__ import annotations
 
-from app.services.protocol import BaseProtocol
+from app.services.protocol import BaseTcpProtocol
 from twisted.internet.protocol import Factory
 from twisted.web.resource import Resource
 from twisted.internet import reactor
@@ -14,7 +14,7 @@ class Server(Factory):
         self,
         name: str,
         port: int,
-        protocol: BaseProtocol
+        protocol: BaseTcpProtocol
     ) -> None:
         self.name = name
         self.port = port
