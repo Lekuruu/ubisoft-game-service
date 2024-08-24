@@ -21,7 +21,11 @@ def register(type: MessageType):
 
 @register(MessageType.STILLALIVE)
 def still_alive(message: Message, client: RouterProtocol):
-    client.send_message(message)
+    client.send_message(gsm.StillaliveResponse(
+        client,
+        message.header,
+        message.data
+    ))
 
 @register(MessageType.KEY_EXCHANGE)
 def key_exchange(message: Message, client: RouterProtocol):

@@ -135,6 +135,13 @@ class GSMResponse:
         ...
 
 @dataclass
+class StillaliveResponse(GSMResponse):
+    """Response to `STILLALIVE` messages"""
+    def initialize(self):
+        assert self.header.type == MessageType.STILLALIVE
+        self.header.property = MessageProperty.GS
+
+@dataclass
 class KeyExchangeResponse(GSMResponse):
     """Response to `KEY_EXCHANGE` messages"""
     def initialize(self):
