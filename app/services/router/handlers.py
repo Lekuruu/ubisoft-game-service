@@ -58,11 +58,10 @@ def key_exchange(message: Message, client: RouterProtocol):
 
 @register(MessageType.LOGIN, RouterHandlers)
 def do_login(message: Message, client: RouterProtocol):
-    # TODO: Do the actual login
+    # TODO: Implement actual login
     username = message.data.lst[0]
     password = message.data.lst[1]
     game = message.data.lst[2]
-    flag = message.data.lst[3] # TODO: ?
 
     response = gsm.LoginResponse(client, message.header, message.data)
     client.send_message(response)
@@ -79,4 +78,12 @@ def wm_join_request(message: Message, client: RouterProtocol):
         )
     )
 
+    client.send_message(response)
+
+@register(MessageType.LOGINWAITMODULE, WaitModuleHandlers)
+def wm_login(message: Message, client: RouterProtocol):
+    # TODO: Implement actual login
+    username = message.data.lst[0]
+
+    response = gsm.LoginWaitModuleResponse(client, message.header, message.data)
     client.send_message(response)
