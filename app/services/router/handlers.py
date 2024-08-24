@@ -7,6 +7,8 @@ from app.constants import MessageType
 from app.utils.gsm import Message
 from app.utils import pkc, gsm
 
+import app
+
 if TYPE_CHECKING:
     from app.services.router import RouterProtocol
 
@@ -59,4 +61,18 @@ def do_login(message: Message, client: RouterProtocol):
     flag = message.data.lst[3] # TODO: ?
 
     response = gsm.LoginResponse(client, message.header, message.data)
+    client.send_message(response)
+
+@register(MessageType.JOINWAITMODULE)
+def wm_join_request(message: Message, client: RouterProtocol):
+    response = gsm.JoinWaitModuleResponse(
+        client,
+        message.header,
+        message.data,
+        (
+            app.config["services"]["Router"]["WaitModule"]["IP"],
+            app.config["services"]["Router"]["WaitModule"]["Port"]
+        )
+    )
+
     client.send_message(response)
