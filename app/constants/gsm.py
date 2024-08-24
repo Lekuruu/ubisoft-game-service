@@ -139,6 +139,7 @@ class MessageType(IntEnum):
     GROUPSZDATA = 212
     KEY_EXCHANGE = 219
     REQUESTPORTID = 221
+    LANGUAGE = 222 # TODO: Is this correct?
 
 class MessageTarget(IntEnum):
     R = 1
