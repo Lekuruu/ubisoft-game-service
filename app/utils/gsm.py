@@ -70,11 +70,11 @@ class Message:
             case MessageProperty.GS:
                 if header.size > GSMSG_HEADER_SIZE:
                     dec = gsxor.decrypt(bts[GSMSG_HEADER_SIZE:header.size])
-                    data: List = List.from_buf(bytearray(dec))
+                    data: List = List.from_buffer(bytearray(dec))
 
             case MessageProperty.GS_ENCRYPT:
                 dec = Cipher(blowfish_key).decrypt(bts[GSMSG_HEADER_SIZE:header.size])
-                data: List = List.from_buf(bytearray(dec))
+                data: List = List.from_buffer(bytearray(dec))
 
             case MessageProperty.GAME:
                 pass

@@ -25,7 +25,7 @@ class Data(ABC):
         pass
 
     @abstractmethod
-    def from_buf(buf: bytearray):
+    def from_buffer(buf: bytearray):
         """Creates an instance from the buffer"""
         pass
 
@@ -44,7 +44,7 @@ class String(Data):
         bts.append(0x00)
         return bytes(bts)
 
-    def from_buf(buf: bytearray):
+    def from_buffer(buf: bytearray):
         result = String()
         if buf[0] != 0x73: # delimiter
             return None
@@ -52,6 +52,42 @@ class String(Data):
         while buf[0] != 0x00 and len(buf) > 1:
             result.string += chr(buf.pop(0))
         buf.pop(0) # \0
+        return result
+
+class Bin(Data):
+    """`clDataBin` implementation"""
+    def __init__(self, bts = bytes()):
+        super().__init__(DataType.BIN)
+        self.bts = bts
+
+    def __str__(self):
+        return str(self.bts)
+
+    def __bytes__(self):
+        bts = bytearray([0x62])
+        size = len(self.bts)
+        size_bts = bytes([
+            (size >> 24) & 0xFF,
+            (size >> 16) & 0xFF,
+            (size >> 8) & 0xFF,
+            size & 0xFF,
+        ])
+        bts.extend(size_bts)
+        bts.extend(self.bts)
+        return bytes(bts)
+
+    def from_buffer(buf: bytearray):
+        result = Bin()
+        if buf[0] != 0x62: # delimiter
+            return None
+        buf.pop(0) # b
+        size = (buf.pop(0) << 24) + (buf.pop(0) << 16) + (buf.pop(0) << 8) + buf.pop(0)
+        if len(buf) < size:
+            raise BufferError(f'Binary size exceeds the buffer by {size - len(buf)}')
+        bts = bytearray()
+        for _ in range(size):
+            bts.append(buf.pop(0))
+        result.bts = bytes(bts)
         return result
 
 class List(Data):
@@ -93,69 +129,30 @@ class List(Data):
         result.pop()
         return bytes(result)
 
-    def from_buf(buf: bytearray, outer = True):
+    def from_buffer(buf: bytearray, outer = True):
         """Deserialize list"""
         result = List([])
-        # [
+
         if not outer and buf[0] == 0x5B:
             buf.pop(0)
 
-        # ] (empty list)
         if buf[0] == 0x5D:
             buf.pop(0)
-            # print(len(result.lst))
             return result
 
         while len(buf) > 1 and buf[0] != 0x5D:
             match(chr(buf[0])):
                 case 'b':
-                    result.lst.append(Bin.from_buf(buf).bts)
+                    result.lst.append(Bin.from_buffer(buf).bts)
                 case 's':
-                    result.lst.append(String.from_buf(buf).string)
+                    result.lst.append(String.from_buffer(buf).string)
                 case 'L':
                     raise NotImplementedError('Long type not implemented yet')
                 case '[':
-                    result.lst.append(List.from_buf(buf, False).lst)
+                    result.lst.append(List.from_buffer(buf, False).lst)
                 case _:
                     raise BufferError('Corrupted buffer or unknown type delimiter')
 
-        # ]
         if not outer and buf[0] == 0x5D:
             buf.pop(0)
-        return result
-
-class Bin(Data):
-    """`clDataBin` implementation"""
-    def __init__(self, bts = bytes()):
-        super().__init__(DataType.BIN)
-        self.bts = bts
-
-    def __str__(self):
-        return str(self.bts)
-
-    def __bytes__(self):
-        bts = bytearray([0x62])
-        size = len(self.bts)
-        size_bts = bytes([
-            (size >> 24) & 0xFF,
-            (size >> 16) & 0xFF,
-            (size >> 8) & 0xFF,
-            size & 0xFF,
-        ])
-        bts.extend(size_bts)
-        bts.extend(self.bts)
-        return bytes(bts)
-
-    def from_buf(buf: bytearray):
-        result = Bin()
-        if buf[0] != 0x62: # delimiter
-            return None
-        buf.pop(0) # b
-        size = (buf.pop(0) << 24) + (buf.pop(0) << 16) + (buf.pop(0) << 8) + buf.pop(0)
-        if len(buf) < size:
-            raise BufferError(f'Binary size exceeds the buffer by {size - len(buf)}')
-        bts = bytearray()
-        for _ in range(size):
-            bts.append(buf.pop(0))
-        result.bts = bytes(bts)
         return result
