@@ -119,7 +119,7 @@ class List(Data):
         bts.append(0x5D)
         return bytes(bts)
     
-    def to_buf(self, outer = True):
+    def to_buffer(self, outer = True):
         """Serialize list"""
         result = bytearray(bytes(self))
         if not outer:
@@ -155,4 +155,5 @@ class List(Data):
 
         if not outer and buf[0] == 0x5D:
             buf.pop(0)
+
         return result
