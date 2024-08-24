@@ -1,6 +1,6 @@
 
+from twisted.web.server import Request, NOT_DONE_YET
 from twisted.web.resource import Resource
-from twisted.web.server import Request
 
 import logging
 import app
@@ -15,6 +15,12 @@ class GameServiceInit(Resource):
     @staticmethod
     def argument(name: str, request: Request) -> str:
         return request.args.get(name.encode(), [b''])[0].decode()
+
+    @staticmethod
+    def write_and_disconnect(request: Request, response: bytes):
+        request.write(response)
+        request.finish()
+        request.transport.loseConnection()
 
     def game_config(self, product: str, user: str) -> str:
         games = app.config['services']['GSConnect']['Games']
@@ -34,8 +40,12 @@ class GameServiceInit(Resource):
         product = self.argument('dp', request)
 
         try:
+            # Load game config
             config = self.game_config(product, user)
-            return config.encode()
         except Exception as e:
             self.logger.error(f'Failed to load game config: {e}')
             return b''
+
+        # Write the response, and immediately disconnect
+        self.write_and_disconnect(request, config.encode())
+        return NOT_DONE_YET
