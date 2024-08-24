@@ -1,6 +1,6 @@
 
+from app.services.router import RouterProtocol, WaitModuleProtocol
 from app.services.server import Server, HttpServer
-from app.services.router import RouterProtocol
 from app.services.gsconnect import GSConnect
 from app.logging import ConsoleLogger
 from twisted.internet import reactor
@@ -15,8 +15,9 @@ logging.basicConfig(
 
 def main():
     Services = app.config['services']
-    HttpServer('GSConnect', Services['GSConnect']['Port'], GSConnect()).start()
+    Server('WaitModule', Services['Router']["WaitModule"]['Port'], WaitModuleProtocol).start()
     Server('Router', Services['Router']['Port'], RouterProtocol).start()
+    HttpServer('GSConnect', Services['GSConnect']['Port'], GSConnect()).start()
     reactor.run()
 
 if __name__ == '__main__':

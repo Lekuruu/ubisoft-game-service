@@ -1,2 +1,2 @@
 
-from .protocol import RouterProtocol
+from .protocol import RouterProtocol, WaitModuleProtocol

@@ -7,7 +7,7 @@ from app.services.protocol import BaseProtocol, IPAddress
 from app.constants import MessageType, GSMSG_HEADER_SIZE
 from app.utils.gsm import Message, GSMessageBundle
 
-from .handlers import RouterHandlers
+from .handlers import RouterHandlers, WaitModuleHandlers
 
 class RouterProtocol(BaseProtocol):
     Handlers: Dict[MessageType, Callable] = RouterHandlers
@@ -59,3 +59,10 @@ class RouterProtocol(BaseProtocol):
 
         for msg in bundle.messages:
             self.handle_message(msg)
+
+class WaitModuleProtocol(RouterProtocol):
+    """
+    Protocol for handling messages from the WaitModule.
+    It has the same underlying functionality as the RouterProtocol.
+    """
+    Handlers: Dict[MessageType, Callable] = WaitModuleHandlers
