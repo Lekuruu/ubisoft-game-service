@@ -2,9 +2,10 @@
 from __future__ import annotations
 
 from twisted.internet.address import IPv4Address, IPv6Address
-from twisted.internet.protocol import Protocol
+from twisted.internet.protocol import Protocol, Factory
 from twisted.internet.error import ConnectionDone
 from twisted.python.failure import Failure
+from twisted.internet import reactor
 
 import logging
 
@@ -76,3 +77,27 @@ class BaseTcpProtocol(Protocol):
             )
         finally:
             self.busy = False
+
+class TcpServer(Factory):
+    def __init__(
+        self,
+        name: str,
+        port: int,
+        protocol: BaseTcpProtocol
+    ) -> None:
+        self.name = name
+        self.port = port
+        self.protocol = protocol
+        self.logger = logging.getLogger(name)
+
+    def start(self) -> None:
+        reactor.listenTCP(self.port, self)
+
+    def startFactory(self):
+        self.logger.info(f'Listening on {self.port}...')
+
+    def stopFactory(self):
+        self.logger.warning(f'Stopping server...')
+
+    def buildProtocol(self, address):
+        return self.protocol(address)
