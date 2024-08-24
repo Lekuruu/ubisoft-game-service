@@ -1,6 +1,6 @@
 
 from __future__ import annotations
-from typing import Callable, List, TYPE_CHECKING
+from typing import Callable, TYPE_CHECKING
 
 from app.utils.pkc import RsaPublicKey
 from app.constants import MessageType
@@ -13,19 +13,14 @@ if TYPE_CHECKING:
     from app.services.router import RouterProtocol
 
 RouterHandlers = {}
-WaitModuleHandlers = {}
 
-def register(
-    type: MessageType,
-    *handler_dicts
-) -> Callable:
+def register(type: MessageType) -> Callable:
     def decorator(func: Callable) -> Callable:
-        for handlers in handler_dicts:
-            handlers[type] = func
+        RouterHandlers[type] = func
         return func
     return decorator
 
-@register(MessageType.STILLALIVE, RouterHandlers, WaitModuleHandlers)
+@register(MessageType.STILLALIVE)
 def still_alive(message: Message, client: RouterProtocol):
     client.send_message(gsm.StillaliveResponse(
         client,
@@ -33,7 +28,7 @@ def still_alive(message: Message, client: RouterProtocol):
         message.data
     ))
 
-@register(MessageType.KEY_EXCHANGE, RouterHandlers, WaitModuleHandlers)
+@register(MessageType.KEY_EXCHANGE)
 def key_exchange(message: Message, client: RouterProtocol):
     request_id = message.data[0]
 
@@ -56,7 +51,7 @@ def key_exchange(message: Message, client: RouterProtocol):
 
     client.send_message(response)
 
-@register(MessageType.LOGIN, RouterHandlers)
+@register(MessageType.LOGIN)
 def do_login(message: Message, client: RouterProtocol):
     # TODO: Implement actual login
     username = message.data[0]
@@ -66,7 +61,7 @@ def do_login(message: Message, client: RouterProtocol):
     response = gsm.LoginResponse(client, message.header, message.data)
     client.send_message(response)
 
-@register(MessageType.JOINWAITMODULE, RouterHandlers)
+@register(MessageType.JOINWAITMODULE)
 def wm_join_request(message: Message, client: RouterProtocol):
     response = gsm.JoinWaitModuleResponse(
         client,
@@ -80,7 +75,7 @@ def wm_join_request(message: Message, client: RouterProtocol):
 
     client.send_message(response)
 
-@register(MessageType.LOGINWAITMODULE, WaitModuleHandlers)
+@register(MessageType.LOGINWAITMODULE)
 def wm_login(message: Message, client: RouterProtocol):
     # TODO: Implement actual login
     username = message.data[0]
@@ -88,7 +83,7 @@ def wm_login(message: Message, client: RouterProtocol):
     response = gsm.LoginWaitModuleResponse(client, message.header, message.data)
     client.send_message(response)
 
-@register(MessageType.PLAYERINFO, WaitModuleHandlers)
+@register(MessageType.PLAYERINFO)
 def player_info(message: Message, client: RouterProtocol):
     # TODO: Implement user state management
     username = message.data[0]
