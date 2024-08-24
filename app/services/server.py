@@ -1,8 +1,8 @@
 
 from __future__ import annotations
 
-from app.services.protocol import BaseTcpProtocol
 from twisted.internet.protocol import Factory
+from app.services.tcp import BaseTcpProtocol
 from twisted.web.resource import Resource
 from twisted.internet import reactor
 from twisted.web.server import Site

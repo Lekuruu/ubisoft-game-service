@@ -3,8 +3,8 @@ from __future__ import annotations
 from rsa import PublicKey, PrivateKey
 from typing import Callable, Dict
 
-from app.services.protocol import BaseTcpProtocol, IPAddress
 from app.constants import MessageType, GSMSG_HEADER_SIZE
+from app.services.tcp import BaseTcpProtocol, IPAddress
 from app.utils.gsm import Message, GSMessageBundle
 
 from .handlers import RouterHandlers

@@ -16,7 +16,7 @@ from app.constants import (
 )
 
 if TYPE_CHECKING:
-    from app.services.protocol import RouterProtocol
+    from app.services.tcp import RouterProtocol
 
 @dataclass
 class GSMessageHeader:
