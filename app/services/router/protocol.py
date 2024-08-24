@@ -1,14 +1,17 @@
 
 from __future__ import annotations
 from rsa import PublicKey, PrivateKey
+from typing import Callable, Dict
 
 from app.services.protocol import BaseProtocol, IPAddress
+from app.constants import MessageType, GSMSG_HEADER_SIZE
 from app.utils.gsm import Message, GSMessageBundle
-from app.constants import GSMSG_HEADER_SIZE
 
-from .handlers import MessageTypeHandlers
+from .handlers import RouterHandlers
 
 class RouterProtocol(BaseProtocol):
+    Handlers: Dict[MessageType, Callable] = RouterHandlers
+
     def __init__(self, address: IPAddress) -> None:
         super().__init__(address)
         self.game_pubkey: PublicKey | None = None
@@ -41,7 +44,7 @@ class RouterProtocol(BaseProtocol):
         # Reset packet buffer
         self.buffer = self.buffer[msg.header.size:]
 
-        if not (handler := MessageTypeHandlers.get(msg.header.type)):
+        if not (handler := self.Handlers.get(msg.header.type)):
             self.logger.warning(f'Unsupported message type: "{msg.header.type.name}"')
             return
 

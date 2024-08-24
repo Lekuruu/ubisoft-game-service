@@ -1,6 +1,6 @@
 
 from __future__ import annotations
-from typing import Callable, TYPE_CHECKING
+from typing import Callable, List, TYPE_CHECKING
 
 from app.utils.pkc import RsaPublicKey
 from app.constants import MessageType
@@ -12,16 +12,20 @@ import app
 if TYPE_CHECKING:
     from app.services.router import RouterProtocol
 
-"""Global dictionary to store message handler functions"""
-MessageTypeHandlers = {}
+RouterHandlers = {}
+WaitModuleHandlers = {}
 
-def register(type: MessageType):
-    def decorator(func: Callable):
-        MessageTypeHandlers[type] = func
+def register(
+    type: MessageType,
+    *handler_dicts
+) -> Callable:
+    def decorator(func: Callable) -> Callable:
+        for handlers in handler_dicts:
+            handlers[type] = func
         return func
     return decorator
 
-@register(MessageType.STILLALIVE)
+@register(MessageType.STILLALIVE, RouterHandlers, WaitModuleHandlers)
 def still_alive(message: Message, client: RouterProtocol):
     client.send_message(gsm.StillaliveResponse(
         client,
@@ -29,7 +33,7 @@ def still_alive(message: Message, client: RouterProtocol):
         message.data
     ))
 
-@register(MessageType.KEY_EXCHANGE)
+@register(MessageType.KEY_EXCHANGE, RouterHandlers, WaitModuleHandlers)
 def key_exchange(message: Message, client: RouterProtocol):
     request_id = message.data.lst[0]
 
@@ -52,7 +56,7 @@ def key_exchange(message: Message, client: RouterProtocol):
 
     client.send_message(response)
 
-@register(MessageType.LOGIN)
+@register(MessageType.LOGIN, RouterHandlers)
 def do_login(message: Message, client: RouterProtocol):
     # TODO: Do the actual login
     username = message.data.lst[0]
@@ -63,7 +67,7 @@ def do_login(message: Message, client: RouterProtocol):
     response = gsm.LoginResponse(client, message.header, message.data)
     client.send_message(response)
 
-@register(MessageType.JOINWAITMODULE)
+@register(MessageType.JOINWAITMODULE, RouterHandlers)
 def wm_join_request(message: Message, client: RouterProtocol):
     response = gsm.JoinWaitModuleResponse(
         client,
