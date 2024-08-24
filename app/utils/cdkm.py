@@ -42,7 +42,7 @@ class CDKeyMessage:
 
     @classmethod
     def from_buffer(cls, bts: bytes) -> "CDKeyMessage":
-        data = List.from_buf(bytearray(BLOWFISH.decrypt(bts[CDKM_HEADER_SIZE:])))
+        data = List.from_buffer(bytearray(BLOWFISH.decrypt(bts[CDKM_HEADER_SIZE:])))
         request_type = RequestType(int(data.lst[1]))
 
         return cls(
