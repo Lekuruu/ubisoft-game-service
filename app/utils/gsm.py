@@ -62,7 +62,7 @@ class Message:
     data: List | None = None
 
     @classmethod
-    def from_bytes(cls, bts: bytes, blowfish_key: bytes):
+    def from_bytes(cls, bts: bytes, blowfish_key: bytes | None):
         header = GSMessageHeader.from_bytes(bts[:GSMSG_HEADER_SIZE])
         data = None
 
@@ -73,6 +73,7 @@ class Message:
                     data: List = List.from_buffer(bytearray(dec))
 
             case MessageProperty.GS_ENCRYPT:
+                assert blowfish_key is not None, "Blowfish key required for GS_ENCRYPT messages"
                 dec = Cipher(blowfish_key).decrypt(bts[GSMSG_HEADER_SIZE:header.size])
                 data: List = List.from_buffer(bytearray(dec))
 
