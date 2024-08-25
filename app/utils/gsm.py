@@ -78,7 +78,7 @@ class Message:
                 data: List = List.from_buffer(bytearray(dec))
 
             case MessageProperty.GAME:
-                pass
+                data = List.from_buffer(bytearray(bts[GSMSG_HEADER_SIZE:header.size]))
 
         return cls(header, data)
 
