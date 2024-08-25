@@ -5,7 +5,7 @@ from typing import Callable, Dict
 
 from app.constants import MessageType, GSMSG_HEADER_SIZE
 from app.services.tcp import BaseTcpProtocol, IPAddress
-from app.utils.gsm import Message, GSMessageBundle
+from app.utils.gsm import Message
 
 from .handlers import RouterHandlers
 
@@ -25,18 +25,15 @@ class RouterProtocol(BaseTcpProtocol):
         self.send(bytes(msg))
 
     def on_data(self, data: bytes) -> None:
-        if len(data) < GSMSG_HEADER_SIZE:
-            # Wait for next buffer
-            return
+        while self.buffer:
+            # Parse message header
+            msg = Message.from_bytes(
+                self.buffer,
+                self.game_bf_key
+            )
 
-        # Parse message header
-        msg = Message.from_bytes(data, self.game_bf_key)
-
-        if msg.header.size >= len(data):
+            # Handle message
             self.handle_message(msg)
-            return
-
-        self.handle_message_bundle(msg)
 
     def handle_message(self, msg: Message) -> None:
         self.logger.debug(f'-> {msg}')
@@ -49,13 +46,3 @@ class RouterProtocol(BaseTcpProtocol):
             return
 
         return handler(msg, self)
-
-    def handle_message_bundle(self, msg: Message) -> None:
-        bundle = GSMessageBundle.from_bytes(
-            msg,
-            self.buffer,
-            self.game_bf_key
-        )
-
-        for msg in bundle.messages:
-            self.handle_message(msg)

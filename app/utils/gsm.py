@@ -83,22 +83,6 @@ class Message:
         return cls(header, data)
 
 @dataclass
-class GSMessageBundle:
-    """Packet containing 2 or more GS messages"""
-    messages: TypedList[Message]
-
-    @classmethod
-    def from_bytes(cls, first: Message, bts: bytes, blowfish_key: bytes):
-        messages = [first]
-
-        while len(bts) > 0:
-            msg = Message.from_bytes(bts, blowfish_key)
-            messages.append(msg)
-            bts = bts[msg.header.size:]
-
-        return cls(messages)
-
-@dataclass
 class GSMResponse:
     """Base class for GS message responses"""
     client: RouterProtocol
