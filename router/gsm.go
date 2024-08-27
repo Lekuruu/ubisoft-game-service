@@ -172,6 +172,7 @@ type GSMessage struct {
 	Data     []interface{}
 }
 
+// Serialize a GSMessage to be sent to the client
 func (msg *GSMessage) Serialize(client *Client) ([]byte, error) {
 	data, err := common.SerializeDataList(msg.Data)
 	if err != nil {
@@ -197,6 +198,7 @@ func (msg *GSMessage) Serialize(client *Client) ([]byte, error) {
 	return append(header, encrypted...), nil
 }
 
+// Read a GSMessage from the client
 func ReadGSMessage(client *Client) (*GSMessage, error) {
 	header := make([]byte, GSMSG_HEADER_SIZE)
 	_, err := client.Conn.Read(header)
@@ -244,6 +246,19 @@ func ReadGSMessage(client *Client) (*GSMessage, error) {
 	}, nil
 }
 
+// Create a new GSMessage from a request, which can be used to send a response
+func NewGSMessageFromRequest(request *GSMessage) *GSMessage {
+	return &GSMessage{
+		Property: request.Property,
+		Priority: request.Priority,
+		Type:     request.Type,
+		Sender:   request.Receiver,
+		Receiver: request.Sender,
+		Data:     request.Data,
+	}
+}
+
+// Encrypt serialized data list
 func EncryptDataList(data []byte, property uint8, client *Client) []byte {
 	switch property {
 	case PROPERTY_GS:
@@ -258,6 +273,7 @@ func EncryptDataList(data []byte, property uint8, client *Client) []byte {
 	}
 }
 
+// Decrypt & deserialize data list
 func DecryptDataList(data []byte, property uint8, client *Client) ([]interface{}, error) {
 	switch property {
 	case PROPERTY_GS:
