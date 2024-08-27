@@ -172,6 +172,31 @@ type GSMessage struct {
 	Data     []interface{}
 }
 
+func (msg *GSMessage) Serialize(client *Client) ([]byte, error) {
+	data, err := common.SerializeDataList(msg.Data)
+	if err != nil {
+		return nil, err
+	}
+
+	encrypted := EncryptDataList(data, msg.Property, client)
+	msg.Size = uint32(len(encrypted) + GSMSG_HEADER_SIZE)
+
+	header := make([]byte, GSMSG_HEADER_SIZE)
+	header[0] = byte(msg.Size >> 16)
+	header[1] = byte(msg.Size >> 8)
+	header[2] = byte(msg.Size)
+	header[3] &= 0x3F
+	header[3] |= (msg.Property << 6)
+	header[3] |= msg.Priority & 0x20
+	header[4] = msg.Type
+	header[5] &= 0xF
+	header[5] |= 0x10 * msg.Sender
+	header[5] &= 0xF0
+	header[5] |= msg.Receiver & 0xF
+
+	return append(header, encrypted...), nil
+}
+
 func ReadGSMessage(client *Client) (*GSMessage, error) {
 	header := make([]byte, GSMSG_HEADER_SIZE)
 	_, err := client.Conn.Read(header)
@@ -217,6 +242,20 @@ func ReadGSMessage(client *Client) (*GSMessage, error) {
 		Receiver: receiver,
 		Data:     dataList,
 	}, nil
+}
+
+func EncryptDataList(data []byte, property uint8, client *Client) []byte {
+	switch property {
+	case PROPERTY_GS:
+		return common.GSXOREncrypt(data)
+
+	case PROPERTY_GS_ENCRYPT:
+		cipher := common.NewBlowfishCipher(client.GameBlowfishKey)
+		return cipher.Encrypt(data)
+
+	default:
+		return data
+	}
 }
 
 func DecryptDataList(data []byte, property uint8, client *Client) ([]interface{}, error) {
