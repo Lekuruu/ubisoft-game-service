@@ -288,6 +288,7 @@ type Blowfish struct {
 	N int
 }
 
+// Create a new Blowfish cipher with the given key
 func NewBlowfish(key []byte) *Blowfish {
 	bf := &Blowfish{
 		P: make([]uint32, len(ORIG_P)),
@@ -299,8 +300,36 @@ func NewBlowfish(key []byte) *Blowfish {
 		bf.S[i] = make([]uint32, len(ORIG_S[i]))
 		copy(bf.S[i], ORIG_S[i])
 	}
-	bf.init(key)
+	bf.initialize(key)
 	return bf
+}
+
+// Encrypt a block of 8 bytes
+func (bf *Blowfish) Encrypt(xl, xr uint32) (uint32, uint32) {
+	for i := 0; i < bf.N; i++ {
+		xl ^= bf.P[i]
+		xr ^= bf.F(xl)
+		xl, xr = xr, xl
+	}
+	xl, xr = xr, xl
+	xr ^= bf.P[bf.N]
+	xl ^= bf.P[bf.N+1]
+	return xl & 0xFFFFFFFF, xr & 0xFFFFFFFF
+}
+
+// Decrypt a block of 8 bytes
+func (bf *Blowfish) Decrypt(xl, xr uint32) (uint32, uint32) {
+	i := bf.N + 1
+	for i > 1 {
+		xl ^= bf.P[i]
+		xr ^= bf.F(xl)
+		xl, xr = xr, xl
+		i--
+	}
+	xl, xr = xr, xl
+	xr ^= bf.P[1]
+	xl ^= bf.P[0]
+	return xl & 0xFFFFFFFF, xr & 0xFFFFFFFF
 }
 
 func (bf *Blowfish) F(x uint32) uint32 {
@@ -317,33 +346,7 @@ func (bf *Blowfish) F(x uint32) uint32 {
 	return y
 }
 
-func (bf *Blowfish) Encrypt(xl, xr uint32) (uint32, uint32) {
-	for i := 0; i < bf.N; i++ {
-		xl ^= bf.P[i]
-		xr ^= bf.F(xl)
-		xl, xr = xr, xl
-	}
-	xl, xr = xr, xl
-	xr ^= bf.P[bf.N]
-	xl ^= bf.P[bf.N+1]
-	return xl & 0xFFFFFFFF, xr & 0xFFFFFFFF
-}
-
-func (bf *Blowfish) Decrypt(xl, xr uint32) (uint32, uint32) {
-	i := bf.N + 1
-	for i > 1 {
-		xl ^= bf.P[i]
-		xr ^= bf.F(xl)
-		xl, xr = xr, xl
-		i--
-	}
-	xl, xr = xr, xl
-	xr ^= bf.P[1]
-	xl ^= bf.P[0]
-	return xl & 0xFFFFFFFF, xr & 0xFFFFFFFF
-}
-
-func (bf *Blowfish) init(key []byte) {
+func (bf *Blowfish) initialize(key []byte) {
 	keyLen := len(key)
 	j := 0
 	for i := 0; i < bf.N+2; i++ {
@@ -378,10 +381,12 @@ type BlowfishCipher struct {
 	bf *Blowfish
 }
 
+// Create a new Blowfish cipher with the given key
 func NewBlowfishCipher(key []byte) *BlowfishCipher {
 	return &BlowfishCipher{bf: NewBlowfish(key)}
 }
 
+// Encrypt a block of bytes
 func (c *BlowfishCipher) Encrypt(src []byte) []byte {
 	srcSize := len(src)
 	if srcSize <= 0xFFFF {
@@ -403,6 +408,7 @@ func (c *BlowfishCipher) Encrypt(src []byte) []byte {
 	return nil
 }
 
+// Decrypt a block of bytes
 func (c *BlowfishCipher) Decrypt(src []byte) []byte {
 	srcSize := len(src)
 	orgSize := int(src[srcSize-2]) + int(src[srcSize-1])*256
@@ -420,6 +426,7 @@ func (c *BlowfishCipher) Decrypt(src []byte) []byte {
 	return buf
 }
 
+// Generate a random key to be used with Blowfish
 func BlowfishKeygen(length int) []byte {
 	key := make([]byte, length)
 	rand.Read(key)

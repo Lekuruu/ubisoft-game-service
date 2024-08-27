@@ -20,7 +20,6 @@ type Logger struct {
 }
 
 func CreateLogger(name string, level int) *Logger {
-	// Create a go logger instance
 	l := log.New(os.Stdout, "", 0)
 	return &Logger{
 		logger: l,
