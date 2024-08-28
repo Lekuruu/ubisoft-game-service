@@ -80,7 +80,6 @@ func (router *Router) HandleClient(conn net.Conn) {
 			break
 		}
 
-		router.Logger.Debug(fmt.Sprintf("<- %v", response.String()))
 		serialized, err := response.Serialize(client)
 
 		if err != nil {
@@ -94,6 +93,8 @@ func (router *Router) HandleClient(conn net.Conn) {
 			router.Logger.Error(fmt.Sprintf("Failed to send message: %s", err))
 			break
 		}
+
+		router.Logger.Debug(fmt.Sprintf("<- %v", response.String()))
 	}
 }
 
