@@ -62,6 +62,9 @@ func handleKeyExchange(message *GSMessage, client *Client) (*GSMessage, error) {
 
 		responseArgs = append(responseArgs, fmt.Sprint(len(encryptedKey)))
 		responseArgs = append(responseArgs, encryptedKey)
+
+	default:
+		return nil, errors.New("invalid request id")
 	}
 
 	response.Data = append(response.Data, responseArgs)
