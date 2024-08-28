@@ -3,6 +3,7 @@ package router
 import (
 	"crypto/rsa"
 	"fmt"
+	"io"
 	"log"
 	"net"
 
@@ -47,13 +48,17 @@ func (router *Router) Serve() {
 }
 
 func (router *Router) HandleClient(conn net.Conn) {
-	defer router.OnClose(conn)
+	defer router.OnDisconnect(conn)
 	router.Logger.Info(fmt.Sprintf("-> <%s>", conn.RemoteAddr()))
 
 	client := &Client{Conn: conn}
 
 	for {
 		msg, err := ReadGSMessage(client)
+
+		if err == io.EOF {
+			break
+		}
 
 		if err != nil {
 			router.Logger.Error(fmt.Sprintf("Failed to parse header: %s", err))
@@ -92,7 +97,7 @@ func (router *Router) HandleClient(conn net.Conn) {
 	}
 }
 
-func (router *Router) OnClose(conn net.Conn) {
+func (router *Router) OnDisconnect(conn net.Conn) {
 	router.Logger.Info(fmt.Sprintf("-> <%s> Disconnected", conn.RemoteAddr()))
 	conn.Close()
 }
