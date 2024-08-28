@@ -31,7 +31,7 @@ func RsaPublicKeyToBuffer(key *rsa.PublicKey) []byte {
 
 func writeU32(value int) []byte {
 	result := make([]byte, 4)
-	binary.BigEndian.PutUint32(result, uint32(value))
+	binary.LittleEndian.PutUint32(result, uint32(value))
 	return result
 }
 
