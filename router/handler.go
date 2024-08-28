@@ -12,6 +12,10 @@ import (
 // A map to store the handlers for each message type
 var RouterHandlers = map[uint8]func(*GSMessage, *Client) (*GSMessage, error){}
 
+func stillAlive(message *GSMessage, _ *Client) (*GSMessage, error) {
+	return NewGSMessageFromRequest(message), nil
+}
+
 func handleKeyExchange(message *GSMessage, client *Client) (*GSMessage, error) {
 	requestId := message.Data[0].(string)
 	requestArgs := message.Data[1].([]interface{})
@@ -65,5 +69,6 @@ func handleKeyExchange(message *GSMessage, client *Client) (*GSMessage, error) {
 }
 
 func init() {
+	RouterHandlers[GSM_STILLALIVE] = stillAlive
 	RouterHandlers[GSM_KEY_EXCHANGE] = handleKeyExchange
 }
