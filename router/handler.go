@@ -1,6 +1,7 @@
 package router
 
 import (
+	"crypto/rand"
 	"crypto/rsa"
 	"errors"
 	"fmt"
@@ -41,7 +42,7 @@ func handleKeyExchange(message *GSMessage, client *Client) (*GSMessage, error) {
 			return nil, errors.New("game public key not initialized")
 		}
 
-		encryptedBlowfishKey := requestArgs[0].([]byte)
+		encryptedBlowfishKey := requestArgs[2].([]byte)
 		blowfishKey, err := client.ServerPrivateKey.Decrypt(nil, encryptedBlowfishKey, nil)
 		if err != nil {
 			return nil, err
@@ -50,7 +51,7 @@ func handleKeyExchange(message *GSMessage, client *Client) (*GSMessage, error) {
 		client.GameBlowfishKey = blowfishKey
 		client.ServerBlowfishKey = common.BlowfishKeygen(16)
 
-		encryptedKey, err := rsa.EncryptPKCS1v15(nil, client.GamePublicKey, client.ServerBlowfishKey)
+		encryptedKey, err := rsa.EncryptPKCS1v15(rand.Reader, client.GamePublicKey, client.ServerBlowfishKey)
 		if err != nil {
 			return nil, err
 		}
