@@ -2,6 +2,7 @@ package router
 
 import (
 	"errors"
+	"fmt"
 
 	"github.com/lekuruu/ubisoft-game-service/common"
 )
@@ -196,6 +197,14 @@ func (msg *GSMessage) Serialize(client *Client) ([]byte, error) {
 	header[5] |= msg.Receiver & 0xF
 
 	return append(header, encrypted...), nil
+}
+
+// Format a GSMessage to be logged
+func (msg *GSMessage) String() string {
+	return fmt.Sprintf(
+		"GSMessage{Size: %d, Property: %d, Priority: %d, Type: %d, Sender: %d, Receiver: %d, Data: %v}",
+		msg.Size, msg.Property, msg.Priority, msg.Type, msg.Sender, msg.Receiver, msg.Data,
+	)
 }
 
 // Read a GSMessage from the client

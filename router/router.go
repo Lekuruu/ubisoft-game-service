@@ -60,7 +60,7 @@ func (router *Router) HandleClient(conn net.Conn) {
 			break
 		}
 
-		router.Logger.Debug(fmt.Sprintf("-> %v", msg))
+		router.Logger.Debug(fmt.Sprintf("-> %v", msg.String()))
 	}
 }
 
