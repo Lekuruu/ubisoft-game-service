@@ -17,10 +17,10 @@ type Router struct {
 
 type Client struct {
 	Conn              net.Conn
-	GamePublicKey     rsa.PublicKey
+	GamePublicKey     *rsa.PublicKey
 	GameBlowfishKey   []byte
-	ServerPublicKey   rsa.PublicKey
-	ServerPrivateKey  rsa.PrivateKey
+	ServerPublicKey   *rsa.PublicKey
+	ServerPrivateKey  *rsa.PrivateKey
 	ServerBlowfishKey []byte
 }
 
