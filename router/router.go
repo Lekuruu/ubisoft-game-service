@@ -61,6 +61,34 @@ func (router *Router) HandleClient(conn net.Conn) {
 		}
 
 		router.Logger.Debug(fmt.Sprintf("-> %v", msg.String()))
+		handler, ok := RouterHandlers[msg.Type]
+
+		if !ok {
+			router.Logger.Warning(fmt.Sprintf("Couldn't find handler for type '%d'", msg.Type))
+			break
+		}
+
+		response, err := handler(msg, client)
+
+		if err != nil {
+			router.Logger.Error(fmt.Sprintf("Failed to handle message: %s", err))
+			break
+		}
+
+		router.Logger.Debug(fmt.Sprintf("<- %v", response.String()))
+		serialized, err := response.Serialize(client)
+
+		if err != nil {
+			router.Logger.Error(fmt.Sprintf("Failed to serialize message: %s", err))
+			break
+		}
+
+		_, err = conn.Write(serialized)
+
+		if err != nil {
+			router.Logger.Error(fmt.Sprintf("Failed to send message: %s", err))
+			break
+		}
 	}
 }
 
