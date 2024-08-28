@@ -19,9 +19,9 @@ func GSXOREncrypt(input []byte) []byte {
 	}
 
 	newSize := 2 * sizeRoot * sizeRoot
-	buf := make([]byte, newSize)
+	buf := make([]int16, newSize)
 	for i := range buf {
-		buf[i] = 0xff
+		buf[i] = -1
 	}
 
 	a, b := 0, 0
@@ -35,7 +35,7 @@ func GSXOREncrypt(input []byte) []byte {
 			a = b + 2
 			b = sizeRoot - 1
 		}
-		buf[a+sizeRoot*b] = result[i]
+		buf[a+sizeRoot*b] = int16(result[i])
 		a++
 		b--
 	}
@@ -43,8 +43,8 @@ func GSXOREncrypt(input []byte) []byte {
 	idx := 0
 	for j := 0; j < sizeRoot; j++ {
 		for k := 0; k < sizeRoot; k++ {
-			if buf[k+sizeRoot*j] != 0xff {
-				result[idx] = buf[k+sizeRoot*j]
+			if buf[k+sizeRoot*j] != -1 {
+				result[idx] = byte(buf[k+sizeRoot*j])
 				idx++
 			}
 		}
