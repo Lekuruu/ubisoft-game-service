@@ -1,6 +1,7 @@
 package common
 
 import (
+	"crypto/rand"
 	"crypto/rsa"
 	"encoding/binary"
 	"math/big"
@@ -10,7 +11,7 @@ const MAX_RSA_MODULUS_LEN = 128
 const PUBLIC_KEY_LEN = 512
 
 func RsaKeygen() (*rsa.PrivateKey, error) {
-	return rsa.GenerateKey(nil, PUBLIC_KEY_LEN)
+	return rsa.GenerateKey(rand.Reader, PUBLIC_KEY_LEN)
 }
 
 func RsaPublicKeyFromBuffer(data []byte) *rsa.PublicKey {
