@@ -285,13 +285,16 @@ func EncryptDataList(data []byte, property uint8, client *Client) []byte {
 // Decrypt & deserialize data list
 func DecryptDataList(data []byte, property uint8, client *Client) ([]interface{}, error) {
 	switch property {
-	case PROPERTY_GS:
-		decrypted := common.GSXORDecrypt(data)
-		return common.DeserializeDataList(decrypted)
-
 	case PROPERTY_GS_ENCRYPT:
+		if client.GameBlowfishKey == nil {
+			return nil, errors.New("blowfish key not initialized")
+		}
 		cipher := common.NewBlowfishCipher(client.GameBlowfishKey)
 		decrypted := cipher.Decrypt(data)
+		return common.DeserializeDataList(decrypted)
+
+	case PROPERTY_GS:
+		decrypted := common.GSXORDecrypt(data)
 		return common.DeserializeDataList(decrypted)
 
 	default:
