@@ -296,10 +296,12 @@ func NewBlowfish(key []byte) *Blowfish {
 		N: 16,
 	}
 	copy(bf.P, ORIG_P)
+
 	for i := range ORIG_S {
 		bf.S[i] = make([]uint32, len(ORIG_S[i]))
 		copy(bf.S[i], ORIG_S[i])
 	}
+
 	bf.initialize(key)
 	return bf
 }
@@ -349,6 +351,7 @@ func (bf *Blowfish) F(x uint32) uint32 {
 func (bf *Blowfish) initialize(key []byte) {
 	keyLen := len(key)
 	j := 0
+
 	for i := 0; i < bf.N+2; i++ {
 		data := uint32(0x00000000)
 		for k := 0; k < 4; k++ {
@@ -361,18 +364,24 @@ func (bf *Blowfish) initialize(key []byte) {
 		bf.P[i] = ORIG_P[i] ^ data
 	}
 
-	datal, datar := uint32(0x00000000), uint32(0x00000000)
-	for i := 0; i < bf.N+2; i += 2 {
+	datal := uint32(0x00000000)
+	datar := uint32(0x00000000)
+
+	i := 0
+	for i < bf.N+2 {
 		datal, datar = bf.Encrypt(datal, datar)
 		bf.P[i] = datal
 		bf.P[i+1] = datar
+		i += 2
 	}
 
 	for i := 0; i < 4; i++ {
-		for j := 0; j < 256; j += 2 {
+		j := 0
+		for j < 256 {
 			datal, datar = bf.Encrypt(datal, datar)
 			bf.S[i][j] = datal
 			bf.S[i][j+1] = datar
+			j += 2
 		}
 	}
 }
@@ -389,39 +398,51 @@ func NewBlowfishCipher(key []byte) *BlowfishCipher {
 // Encrypt a block of bytes
 func (c *BlowfishCipher) Encrypt(src []byte) []byte {
 	srcSize := len(src)
+
 	if srcSize <= 0xFFFF {
 		leftover := srcSize % 8
-		pad := 8 - leftover
-		paddedSize := srcSize + pad
+		pad := leftover
+		if pad == 0 {
+			pad = 8
+		}
+		paddedSize := srcSize + 8 - pad
 		buf := make([]byte, paddedSize)
 		copy(buf, src)
+
 		ints := readAsU32List(buf)
 		for i := 0; i < len(ints); i += 2 {
 			l, r := c.bf.Encrypt(ints[i], ints[i+1])
 			ints[i] = l
 			ints[i+1] = r
 		}
+
 		buf = writeU32List(ints)
-		buf = append(buf, byte(srcSize&0xFF), byte((srcSize>>8)&0xFF))
+		buf = append(buf, writeU16(srcSize)...)
 		return buf
 	}
+
 	return nil
 }
 
 // Decrypt a block of bytes
 func (c *BlowfishCipher) Decrypt(src []byte) []byte {
 	srcSize := len(src)
-	orgSize := int(src[srcSize-2]) + int(src[srcSize-1])*256
+	orgSize := int(src[srcSize-2]) + int(src[srcSize-1])*16
 	offset := (srcSize - 2) % 8
-	pad := 8 - offset
-	size := srcSize - 2 + pad
+	pad := offset
+	if pad == 0 {
+		pad = 8
+	}
+	size := srcSize + 6 - pad
 	buf := src[:size]
+
 	ints := readAsU32List(buf)
 	for i := 0; i < len(ints); i += 2 {
 		l, r := c.bf.Decrypt(ints[i], ints[i+1])
 		ints[i] = l
 		ints[i+1] = r
 	}
+
 	buf = writeU32List(ints)[:orgSize]
 	return buf
 }
@@ -434,17 +455,24 @@ func BlowfishKeygen(length int) []byte {
 }
 
 func readAsU32List(buf []byte) []uint32 {
-	ints := make([]uint32, len(buf)/4)
-	for i := range ints {
-		ints[i] = binary.BigEndian.Uint32(buf[i*4:])
+	size := len(buf) / 4
+	result := make([]uint32, size)
+	for i := 0; i < size; i++ {
+		result[i] = binary.LittleEndian.Uint32(buf[i*4:])
 	}
-	return ints
+	return result
 }
 
 func writeU32List(ints []uint32) []byte {
-	buf := make([]byte, len(ints)*4)
-	for i, v := range ints {
-		binary.BigEndian.PutUint32(buf[i*4:], v)
+	buf := make([]byte, 4*len(ints))
+	for i, val := range ints {
+		binary.LittleEndian.PutUint32(buf[i*4:], val)
 	}
+	return buf
+}
+
+func writeU16(v int) []byte {
+	buf := make([]byte, 2)
+	binary.LittleEndian.PutUint16(buf, uint16(v))
 	return buf
 }
