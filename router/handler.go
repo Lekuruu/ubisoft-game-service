@@ -68,7 +68,21 @@ func handleKeyExchange(message *GSMessage, client *Client) (*GSMessage, error) {
 	return response, nil
 }
 
+func handleLogin(message *GSMessage, client *Client) (*GSMessage, error) {
+	// username := message.Data[0].(string)
+	// password := message.Data[1].(string)
+	// game := message.Data[2].(string)
+	// TODO: Implement login logic
+
+	response := NewGSMessageFromRequest(message)
+	response.Type = GSM_GSSUCCESS
+	messageId := uint8(GSM_LOGIN)
+	response.Data = []interface{}{[]byte{messageId}}
+	return response, nil
+}
+
 func init() {
 	RouterHandlers[GSM_STILLALIVE] = stillAlive
 	RouterHandlers[GSM_KEY_EXCHANGE] = handleKeyExchange
+	RouterHandlers[GSM_LOGIN] = handleLogin
 }
