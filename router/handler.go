@@ -43,7 +43,7 @@ func handleKeyExchange(message *GSMessage, client *Client) (*GSMessage, error) {
 		}
 
 		encryptedBlowfishKey := requestArgs[2].([]byte)
-		blowfishKey, err := client.ServerPrivateKey.Decrypt(nil, encryptedBlowfishKey, nil)
+		blowfishKey, err := client.ServerPrivateKey.Decrypt(rand.Reader, encryptedBlowfishKey, nil)
 		if err != nil {
 			return nil, err
 		}
