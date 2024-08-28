@@ -57,6 +57,7 @@ func (router *Router) HandleClient(conn net.Conn) {
 		msg, err := ReadGSMessage(client)
 
 		if err == io.EOF {
+			// Client disconnected
 			break
 		}
 
@@ -70,7 +71,7 @@ func (router *Router) HandleClient(conn net.Conn) {
 
 		if !ok {
 			router.Logger.Warning(fmt.Sprintf("Couldn't find handler for type '%d'", msg.Type))
-			break
+			continue
 		}
 
 		response, err := handler(msg, client)
