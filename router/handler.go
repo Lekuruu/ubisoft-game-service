@@ -84,8 +84,25 @@ func handleLogin(message *GSMessage, client *Client) (*GSMessage, error) {
 	return response, nil
 }
 
+func handleWaitModuleJoin(message *GSMessage, client *Client) (*GSMessage, error) {
+	// NOTE: The WaitModule server is not implemented in this project yet, so
+	//		 that's why we are sending the router's host and port as the
+	//		 WaitModule connection info.
+	response := NewGSMessageFromRequest(message)
+	response.Type = GSM_GSSUCCESS
+	response.Data = []interface{}{common.WriteU8(GSM_JOINWAITMODULE)}
+
+	waitModuleInfo := []interface{}{}
+	waitModuleInfo = append(waitModuleInfo, client.Server.Host)
+	waitModuleInfo = append(waitModuleInfo, common.WriteU32(client.Server.Port))
+	response.Data = append(response.Data, waitModuleInfo)
+
+	return response, nil
+}
+
 func init() {
 	RouterHandlers[GSM_STILLALIVE] = stillAlive
 	RouterHandlers[GSM_KEY_EXCHANGE] = handleKeyExchange
 	RouterHandlers[GSM_LOGIN] = handleLogin
+	RouterHandlers[GSM_JOINWAITMODULE] = handleWaitModuleJoin
 }
