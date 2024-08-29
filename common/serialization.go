@@ -19,6 +19,12 @@ func WriteU32[T constraints.Integer](value T) []byte {
 	return result
 }
 
+func WriteU32BE[T constraints.Integer](value T) []byte {
+	result := make([]byte, 4)
+	binary.BigEndian.PutUint32(result, uint32(value))
+	return result
+}
+
 func WriteU16[T constraints.Integer](value T) []byte {
 	buf := make([]byte, 2)
 	binary.LittleEndian.PutUint16(buf, uint16(value))
@@ -54,4 +60,8 @@ func WriteBigIntBE(value *big.Int, length int) []byte {
 
 func ReadBigIntBE(data []byte) *big.Int {
 	return new(big.Int).SetBytes(data)
+}
+
+func ReadU32BE(data []byte) uint32 {
+	return binary.BigEndian.Uint32(data)
 }
