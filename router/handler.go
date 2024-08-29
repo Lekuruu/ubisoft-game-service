@@ -100,9 +100,21 @@ func handleWaitModuleJoin(message *GSMessage, client *Client) (*GSMessage, error
 	return response, nil
 }
 
+func handleWaitModuleLogin(message *GSMessage, client *Client) (*GSMessage, error) {
+	// username := message.Data[0].(string)
+	// TODO: Verify login
+
+	response := NewGSMessageFromRequest(message)
+	response.Property = PROPERTY_GS
+	response.Type = GSM_GSSUCCESS
+	response.Data = []interface{}{common.WriteU8(GSM_LOGINWAITMODULE)}
+	return response, nil
+}
+
 func init() {
 	RouterHandlers[GSM_STILLALIVE] = stillAlive
 	RouterHandlers[GSM_KEY_EXCHANGE] = handleKeyExchange
 	RouterHandlers[GSM_LOGIN] = handleLogin
 	RouterHandlers[GSM_JOINWAITMODULE] = handleWaitModuleJoin
+	RouterHandlers[GSM_LOGINWAITMODULE] = handleWaitModuleLogin
 }
