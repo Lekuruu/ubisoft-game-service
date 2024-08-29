@@ -18,6 +18,7 @@ type Router struct {
 
 type Client struct {
 	Conn              net.Conn
+	Server            *Router
 	GamePublicKey     *rsa.PublicKey
 	GameBlowfishKey   []byte
 	ServerPublicKey   *rsa.PublicKey
@@ -51,7 +52,10 @@ func (router *Router) HandleClient(conn net.Conn) {
 	defer router.OnDisconnect(conn)
 	router.Logger.Info(fmt.Sprintf("-> <%s>", conn.RemoteAddr()))
 
-	client := &Client{Conn: conn}
+	client := &Client{
+		Conn:   conn,
+		Server: router,
+	}
 
 	for {
 		msg, err := ReadGSMessage(client)
