@@ -78,9 +78,9 @@ func handleLogin(message *GSMessage, client *Client) (*GSMessage, error) {
 	// TODO: Implement login logic
 
 	response := NewGSMessageFromRequest(message)
+	response.Property = PROPERTY_GS
 	response.Type = GSM_GSSUCCESS
-	messageId := uint8(GSM_LOGIN)
-	response.Data = []interface{}{[]byte{messageId}}
+	response.Data = []interface{}{common.WriteU8(GSM_LOGIN)}
 	return response, nil
 }
 
