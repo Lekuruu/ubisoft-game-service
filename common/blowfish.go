@@ -2,7 +2,6 @@ package common
 
 import (
 	"crypto/rand"
-	"encoding/binary"
 )
 
 // Blowfish p-array
@@ -409,15 +408,15 @@ func (c *BlowfishCipher) Encrypt(src []byte) []byte {
 		buf := make([]byte, paddedSize)
 		copy(buf, src)
 
-		ints := readAsU32List(buf)
+		ints := ReadAsU32List(buf)
 		for i := 0; i < len(ints); i += 2 {
 			l, r := c.bf.Encrypt(ints[i], ints[i+1])
 			ints[i] = l
 			ints[i+1] = r
 		}
 
-		buf = writeU32List(ints)
-		buf = append(buf, writeU16(srcSize)...)
+		buf = WriteU32List(ints)
+		buf = append(buf, WriteU16(srcSize)...)
 		return buf
 	}
 
@@ -436,14 +435,14 @@ func (c *BlowfishCipher) Decrypt(src []byte) []byte {
 	size := srcSize + 6 - pad
 	buf := src[:size]
 
-	ints := readAsU32List(buf)
+	ints := ReadAsU32List(buf)
 	for i := 0; i < len(ints); i += 2 {
 		l, r := c.bf.Decrypt(ints[i], ints[i+1])
 		ints[i] = l
 		ints[i+1] = r
 	}
 
-	buf = writeU32List(ints)[:orgSize]
+	buf = WriteU32List(ints)[:orgSize]
 	return buf
 }
 
@@ -452,27 +451,4 @@ func BlowfishKeygen(length int) []byte {
 	key := make([]byte, length)
 	rand.Read(key)
 	return key
-}
-
-func readAsU32List(buf []byte) []uint32 {
-	size := len(buf) / 4
-	result := make([]uint32, size)
-	for i := 0; i < size; i++ {
-		result[i] = binary.LittleEndian.Uint32(buf[i*4:])
-	}
-	return result
-}
-
-func writeU32List(ints []uint32) []byte {
-	buf := make([]byte, 4*len(ints))
-	for i, val := range ints {
-		binary.LittleEndian.PutUint32(buf[i*4:], val)
-	}
-	return buf
-}
-
-func writeU16(v int) []byte {
-	buf := make([]byte, 2)
-	binary.LittleEndian.PutUint16(buf, uint16(v))
-	return buf
 }
