@@ -7,6 +7,12 @@ import (
 	"golang.org/x/exp/constraints"
 )
 
+func WriteU64[T constraints.Integer](value T) []byte {
+	buf := make([]byte, 8)
+	binary.LittleEndian.PutUint64(buf, uint64(value))
+	return buf
+}
+
 func WriteU32[T constraints.Integer](value T) []byte {
 	result := make([]byte, 4)
 	binary.LittleEndian.PutUint32(result, uint32(value))
@@ -17,6 +23,10 @@ func WriteU16[T constraints.Integer](value T) []byte {
 	buf := make([]byte, 2)
 	binary.LittleEndian.PutUint16(buf, uint16(value))
 	return buf
+}
+
+func WriteU8[T constraints.Integer](value T) []byte {
+	return []byte{byte(value)}
 }
 
 func WriteU32List(ints []uint32) []byte {
