@@ -72,20 +72,20 @@ func (cdks *CDKeyServer) HandleClient(client *Client) {
 			break
 		}
 
-		messageIdString, err := common.GetStringListItem(msg.Data, 0)
+		requestTypeString, err := common.GetStringListItem(msg.Data, 1)
 		if err != nil {
 			cdks.Logger.Error(fmt.Sprintf("Failed to parse message ID: %s", err))
 			break
 		}
 
-		messageId, err := strconv.Atoi(messageIdString)
+		requestType, err := strconv.Atoi(requestTypeString)
 		if err != nil {
 			cdks.Logger.Error(fmt.Sprintf("Failed to parse message ID: %s", err))
 			break
 		}
 
 		cdks.Logger.Debug(fmt.Sprintf("-> %v", msg.String()))
-		handler, ok := CDKeyHandlers[messageId]
+		handler, ok := CDKeyHandlers[requestType]
 
 		if !ok {
 			cdks.Logger.Warning(fmt.Sprintf("Couldn't find handler for type '%d'", msg.Type))
