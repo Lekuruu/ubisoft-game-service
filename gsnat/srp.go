@@ -1,7 +1,6 @@
 package gsnat
 
 import (
-	"encoding/binary"
 	"fmt"
 
 	"github.com/lekuruu/ubisoft-game-service/common"
@@ -142,9 +141,10 @@ func makeChecksum(data []byte) uint16 {
 		checkBase += uint32(data[0])
 		truncPos++
 	}
+
 	if halfLen > 0 {
 		for i := 0; i < halfLen; i++ {
-			checkBase += uint32(binary.LittleEndian.Uint16(data[truncPos:]))
+			checkBase += uint32(common.ReadU16(data[truncPos:]))
 			truncPos += 2
 		}
 	}
