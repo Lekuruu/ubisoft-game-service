@@ -53,6 +53,8 @@ func (cdks *CDKeyServer) Serve() {
 }
 
 func (cdks *CDKeyServer) HandleClient(client *Client) {
+	defer cdks.HandlePanic(client)
+
 	for {
 		msg, err := ReadCDKeyMessage(client)
 
@@ -99,5 +101,11 @@ func (cdks *CDKeyServer) HandleClient(client *Client) {
 		}
 
 		cdks.Logger.Debug(fmt.Sprintf("<- %v", response.String()))
+	}
+}
+
+func (cdks *CDKeyServer) HandlePanic(client *Client) {
+	if r := recover(); r != nil {
+		cdks.Logger.Error(fmt.Sprintf("Panic: %s", r))
 	}
 }

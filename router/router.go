@@ -104,6 +104,10 @@ func (router *Router) HandleClient(conn net.Conn) {
 }
 
 func (router *Router) OnDisconnect(conn net.Conn) {
+	if r := recover(); r != nil {
+		router.Logger.Error(fmt.Sprintf("Panic: %s", r))
+	}
+
 	router.Logger.Info(fmt.Sprintf("-> <%s> Disconnected", conn.RemoteAddr()))
 	conn.Close()
 }
