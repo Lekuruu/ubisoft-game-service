@@ -53,13 +53,9 @@ func (msg *CDKeyMessage) Serialize() ([]byte, error) {
 }
 
 func (msg *CDKeyMessage) String() string {
-	messageId := msg.Data[0].(string)
-	requestType := msg.Data[1].(string)
-	innerData := msg.Data[3].([]interface{})
-
 	return fmt.Sprintf(
-		"CDKeyMessage{Size: %d, Type: %d, MessageId: %s, RequestType: %s, Data: %v, InnerData: %v}",
-		msg.Size, msg.Type, messageId, requestType, msg.Data, innerData,
+		"CDKeyMessage{Size: %d, Type: %d, Data: %v}",
+		msg.Size, msg.Type, msg.Data,
 	)
 }
 
