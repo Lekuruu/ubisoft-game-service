@@ -127,10 +127,19 @@ func handleWaitModuleLogin(message *GSMessage, client *Client) (*GSMessage, erro
 	return response, nil
 }
 
+func handlePlayerInfo(message *GSMessage, client *Client) (*GSMessage, error) {
+	response := NewGSMessageFromRequest(message)
+	response.Type = GSM_GSSUCCESS
+	playerData := []interface{}{"findme1", "findme2", "findme3", "findme4", "findme5", "findme6", "findme7"}
+	response.Data = []interface{}{common.WriteU8(GSM_PLAYERINFO), playerData}
+	return response, nil
+}
+
 func init() {
 	RouterHandlers[GSM_STILLALIVE] = stillAlive
 	RouterHandlers[GSM_KEY_EXCHANGE] = handleKeyExchange
 	RouterHandlers[GSM_LOGIN] = handleLogin
 	RouterHandlers[GSM_JOINWAITMODULE] = handleWaitModuleJoin
 	RouterHandlers[GSM_LOGINWAITMODULE] = handleWaitModuleLogin
+	RouterHandlers[GSM_PLAYERINFO] = handlePlayerInfo
 }
