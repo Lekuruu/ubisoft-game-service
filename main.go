@@ -1,6 +1,7 @@
 package main
 
 import (
+	"strings"
 	"sync"
 
 	"github.com/lekuruu/ubisoft-game-service/cdkey"
@@ -37,6 +38,26 @@ func main() {
 		Logger: *common.CreateLogger("GSConnect", common.DEBUG),
 	}
 
+	scct := []string{
+		"[Servers]",
+		"RouterIP0=127.0.0.1",
+		"RouterPort0=40000",
+		"IRCIP0=127.0.0.1",
+		"IRCPort0=6668",
+		"CDKeyServerIP0=127.0.0.1",
+		"CDKeyServerPort0=44000",
+		"ProxyIP0=127.0.0.1",
+		"ProxyPort0=4040",
+		"NATServerIP0=127.0.0.1",
+		"NATServerPort0=7781",
+	}
+
+	gsc.Games["SPLINTERCELL3PCADVERS"] = strings.Join(scct, "\n")
+	gsc.Games["SPLINTERCELL3PCCOOP"] = strings.Join(scct, "\n")
+	gsc.Games["SPLINTERCELL3PS2US"] = strings.Join(scct, "\n")
+	gsc.Games["SPLINTERCELL3PC"] = strings.Join(scct, "\n")
+	gsc.Games["HEROES_5"] = strings.Join(scct, "\n")
+
 	var wg sync.WaitGroup
 
 	runService(&wg, router.Serve)
@@ -45,3 +66,5 @@ func main() {
 
 	wg.Wait()
 }
+
+// TODO: Add configuration for services
