@@ -142,3 +142,39 @@ func DeserializeDataList(data []byte) ([]interface{}, error) {
 
 	return result, nil
 }
+
+func GetStringListItem(data []interface{}, index int) (string, error) {
+	if len(data) <= index {
+		return "", errors.New("index out of range")
+	}
+
+	if str, ok := data[index].(string); ok {
+		return str, nil
+	}
+
+	return "", errors.New("item is not a string")
+}
+
+func GetBinaryListItem(data []interface{}, index int) ([]byte, error) {
+	if len(data) <= index {
+		return nil, errors.New("index out of range")
+	}
+
+	if bin, ok := data[index].([]byte); ok {
+		return bin, nil
+	}
+
+	return nil, errors.New("item is not binary")
+}
+
+func GetListItem(data []interface{}, index int) ([]interface{}, error) {
+	if len(data) <= index {
+		return nil, errors.New("index out of range")
+	}
+
+	if list, ok := data[index].([]interface{}); ok {
+		return list, nil
+	}
+
+	return nil, errors.New("item is not a list")
+}
