@@ -6,6 +6,7 @@ import (
 	"github.com/lekuruu/ubisoft-game-service/common"
 )
 
+const PACKET_BUFFER_SIZE = 512
 const CDKM_HEADER_SIZE = 5
 
 const (
@@ -75,6 +76,10 @@ func ReadCDKeyMessage(client *Client) (*CDKeyMessage, error) {
 	if msg.Size == 0 || msg.Type == 0 {
 		// Empty data, do nothing
 		return nil, nil
+	}
+
+	if msg.Size > PACKET_BUFFER_SIZE {
+		return nil, fmt.Errorf("requested size too large: %d", msg.Size)
 	}
 
 	data := make([]byte, msg.Size)

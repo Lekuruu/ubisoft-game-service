@@ -7,6 +7,7 @@ import (
 	"github.com/lekuruu/ubisoft-game-service/common"
 )
 
+const MAX_PACKET_SIZE = 0x50000
 const GSMSG_HEADER_SIZE = 6
 
 const (
@@ -229,6 +230,10 @@ func ReadGSMessage(client *Client) (*GSMessage, error) {
 	msgType := (header[4])
 	sender := (header[5] >> 4)
 	receiver := (header[5] & 0x0F)
+
+	if size > MAX_PACKET_SIZE {
+		return nil, errors.New("requested packet size too large")
+	}
 
 	data := make([]byte, size-GSMSG_HEADER_SIZE)
 	_, err = client.Conn.Read(data)
