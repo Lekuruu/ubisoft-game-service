@@ -3,6 +3,7 @@ package cdkey
 import (
 	"strconv"
 
+	"github.com/lekuruu/ubisoft-game-service/common"
 	"github.com/lekuruu/ubisoft-game-service/router"
 )
 
@@ -20,7 +21,7 @@ func handleChallenge(msg *CDKeyMessage, client *Client) (*CDKeyMessage, error) {
 	}
 	response.Data[3] = []interface{}{
 		strconv.Itoa(router.GSM_GSSUCCESS),
-		hash,
+		[]interface{}{common.SerializeBinary(hash)},
 	}
 	return response, nil
 }
@@ -37,7 +38,10 @@ func handleActivation(msg *CDKeyMessage, client *Client) (*CDKeyMessage, error) 
 	}
 	response.Data[3] = []interface{}{
 		strconv.Itoa(router.GSM_GSSUCCESS),
-		[]interface{}{activationId, buffer},
+		[]interface{}{
+			common.SerializeBinary(activationId),
+			common.SerializeBinary(buffer),
+		},
 	}
 	return response, nil
 }
