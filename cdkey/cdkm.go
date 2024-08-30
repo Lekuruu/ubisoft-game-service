@@ -39,9 +39,12 @@ func (msg *CDKeyMessage) Serialize() ([]byte, error) {
 		return nil, err
 	}
 
-	encrypted := Blowfish.Encrypt(dataList)
-	msg.Size = uint32(len(encrypted))
+	encrypted, err := Blowfish.Encrypt(dataList)
+	if err != nil {
+		return nil, err
+	}
 
+	msg.Size = uint32(len(encrypted))
 	header := make([]byte, CDKM_HEADER_SIZE)
 	header = append(header, common.WriteU8(msg.Type)...)
 	header = append(header, common.WriteU32BE(msg.Size)...)
@@ -80,7 +83,12 @@ func ReadCDKeyMessage(client *Client) (*CDKeyMessage, error) {
 		return nil, err
 	}
 
-	decrypted := Blowfish.Decrypt(data)
+	decrypted, err := Blowfish.Decrypt(data)
+
+	if err != nil {
+		return nil, err
+	}
+
 	dataList, err := common.DeserializeDataList(decrypted)
 
 	if err != nil {

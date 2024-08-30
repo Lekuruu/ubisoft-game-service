@@ -2,6 +2,7 @@ package common
 
 import (
 	"crypto/rand"
+	"errors"
 )
 
 // Blowfish p-array
@@ -395,7 +396,7 @@ func NewBlowfishCipher(key []byte) *BlowfishCipher {
 }
 
 // Encrypt a block of bytes
-func (c *BlowfishCipher) Encrypt(src []byte) []byte {
+func (c *BlowfishCipher) Encrypt(src []byte) ([]byte, error) {
 	srcSize := len(src)
 
 	if srcSize <= 0xFFFF {
@@ -417,14 +418,14 @@ func (c *BlowfishCipher) Encrypt(src []byte) []byte {
 
 		buf = WriteU32List(ints)
 		buf = append(buf, WriteU16(srcSize)...)
-		return buf
+		return buf, nil
 	}
 
-	return nil
+	return nil, errors.New("input size is too large")
 }
 
 // Decrypt a block of bytes
-func (c *BlowfishCipher) Decrypt(src []byte) []byte {
+func (c *BlowfishCipher) Decrypt(src []byte) ([]byte, error) {
 	srcSize := len(src)
 	orgSize := int(src[srcSize-2]) + int(src[srcSize-1])*16
 	offset := (srcSize - 2) % 8
@@ -443,7 +444,7 @@ func (c *BlowfishCipher) Decrypt(src []byte) []byte {
 	}
 
 	buf = WriteU32List(ints)[:orgSize]
-	return buf
+	return buf, nil
 }
 
 // Generate a random key to be used with Blowfish
