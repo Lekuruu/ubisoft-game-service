@@ -25,6 +25,24 @@ func handleChallenge(msg *CDKeyMessage, client *Client) (*CDKeyMessage, error) {
 	return response, nil
 }
 
+func handleActivation(msg *CDKeyMessage, client *Client) (*CDKeyMessage, error) {
+	response := NewCDKeyMessageFromRequest(msg)
+	activationId := []byte{
+		0x33, 0x33, 0x33, 0x33, 0x33, 0x33,
+		0x33, 0x33, 0x33, 0x33, 0x33,
+	}
+	buffer := []byte{
+		0x44, 0x44, 0x44, 0x44, 0x44, 0x44,
+		0x44, 0x44, 0x44, 0x44, 0x44,
+	}
+	response.Data[3] = []interface{}{
+		strconv.Itoa(router.GSM_GSSUCCESS),
+		[]interface{}{activationId, buffer},
+	}
+	return response, nil
+}
+
 func init() {
 	CDKeyHandlers[CDKM_CHALLENGE] = handleChallenge
+	CDKeyHandlers[CDKM_ACTIVATION] = handleActivation
 }
