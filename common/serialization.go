@@ -65,3 +65,7 @@ func ReadBigIntBE(data []byte) *big.Int {
 func ReadU32BE(data []byte) uint32 {
 	return binary.BigEndian.Uint32(data)
 }
+
+func ReadU16(data []byte) uint16 {
+	return binary.LittleEndian.Uint16(data)
+}
