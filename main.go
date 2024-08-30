@@ -7,6 +7,7 @@ import (
 	"github.com/lekuruu/ubisoft-game-service/cdkey"
 	"github.com/lekuruu/ubisoft-game-service/common"
 	"github.com/lekuruu/ubisoft-game-service/gsconnect"
+	"github.com/lekuruu/ubisoft-game-service/gsnat"
 	"github.com/lekuruu/ubisoft-game-service/router"
 )
 
@@ -38,6 +39,11 @@ func main() {
 		Logger: *common.CreateLogger("GSConnect", common.DEBUG),
 	}
 
+	nat := gsnat.GSNatServer{
+		Port:   7781,
+		Logger: *common.CreateLogger("GSNatServer", common.DEBUG),
+	}
+
 	scct := []string{
 		"[Servers]",
 		"RouterIP0=127.0.0.1",
@@ -62,6 +68,7 @@ func main() {
 
 	runService(&wg, router.Serve)
 	runService(&wg, cdks.Serve)
+	runService(&wg, nat.Serve)
 	runService(&wg, gsc.Serve)
 
 	wg.Wait()
