@@ -8,6 +8,9 @@ import (
 )
 
 func GSInitRoute(gsc *GSContext) {
+	gsc.Response.Header().Set("Content-Type", "text/plain")
+
+	// Parse query parameters
 	query := gsc.Request.URL.Query()
 	user := query.Get("user")
 	product := query.Get("dp")
@@ -17,6 +20,7 @@ func GSInitRoute(gsc *GSContext) {
 		return
 	}
 
+	// Find game configuration
 	game, ok := gsc.Server.Games[product]
 
 	if !ok {
@@ -33,13 +37,12 @@ func GSInitRoute(gsc *GSContext) {
 
 	if err != nil {
 		// Use the default response writer if hijacking fails
-		gsc.Response.Header().Set("Content-Type", "text/plain")
 		gsc.Response.WriteHeader(http.StatusOK)
 		gsc.Response.Write([]byte(game))
 		return
 	}
 
-	// Send the game to the client
+	// Send send game server information to client
 	buf.Write([]byte("HTTP/1.1 200 OK\r\n"))
 	buf.Write([]byte("Content-Type: text/plain\r\n\r\n"))
 	buf.Write([]byte(game))
