@@ -46,7 +46,39 @@ func handleActivation(msg *CDKeyMessage, client *Client) (*CDKeyMessage, error) 
 	return response, nil
 }
 
+func handleAuth(msg *CDKeyMessage, client *Client) (*CDKeyMessage, error) {
+	response := NewCDKeyMessageFromRequest(msg)
+	authId := []byte{
+		0x55, 0x55, 0x55, 0x55, 0x55, 0x55,
+		0x55, 0x55, 0x55, 0x55, 0x55,
+	}
+	response.Data[3] = []interface{}{
+		strconv.Itoa(router.GSM_GSSUCCESS),
+		[]interface{}{common.SerializeBinary(authId)},
+	}
+	return response, nil
+}
+
+func handleValidation(msg *CDKeyMessage, client *Client) (*CDKeyMessage, error) {
+	response := NewCDKeyMessageFromRequest(msg)
+	status := CDKM_E_PLAYER_VALID
+	buffer := []byte{
+		0x66, 0x66, 0x66, 0x66, 0x66, 0x66,
+		0x66, 0x66, 0x66, 0x66, 0x66,
+	}
+	response.Data[3] = []interface{}{
+		strconv.Itoa(router.GSM_GSSUCCESS),
+		[]interface{}{
+			strconv.Itoa(status),
+			common.SerializeBinary(buffer),
+		},
+	}
+	return response, nil
+}
+
 func init() {
 	CDKeyHandlers[CDKM_CHALLENGE] = handleChallenge
 	CDKeyHandlers[CDKM_ACTIVATION] = handleActivation
+	CDKeyHandlers[CDKM_AUTH] = handleAuth
+	CDKeyHandlers[CDKM_VALIDATION] = handleValidation
 }
