@@ -72,7 +72,7 @@ func ReadCDKeyMessage(client *Client) (*CDKeyMessage, error) {
 		Size: common.ReadU32BE(header[1:5]),
 	}
 
-	if msg.Size == 0 && msg.Type == 0 {
+	if msg.Size == 0 || msg.Type == 0 {
 		// Empty data, do nothing
 		return nil, nil
 	}
