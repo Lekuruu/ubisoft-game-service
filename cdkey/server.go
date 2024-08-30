@@ -60,6 +60,10 @@ func (cdks *CDKeyServer) HandleClient(client *Client) {
 			break
 		}
 
+		if msg == nil {
+			continue
+		}
+
 		if err != nil {
 			cdks.Logger.Error(fmt.Sprintf("Failed to parse header: %s", err))
 			break
