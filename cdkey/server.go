@@ -6,6 +6,7 @@ import (
 	"io"
 	"log"
 	"net"
+	"strconv"
 
 	"github.com/lekuruu/ubisoft-game-service/common"
 )
@@ -71,8 +72,20 @@ func (cdks *CDKeyServer) HandleClient(client *Client) {
 			break
 		}
 
+		messageIdString, err := common.GetStringListItem(msg.Data, 0)
+		if err != nil {
+			cdks.Logger.Error(fmt.Sprintf("Failed to parse message ID: %s", err))
+			break
+		}
+
+		messageId, err := strconv.Atoi(messageIdString)
+		if err != nil {
+			cdks.Logger.Error(fmt.Sprintf("Failed to parse message ID: %s", err))
+			break
+		}
+
 		cdks.Logger.Debug(fmt.Sprintf("-> %v", msg.String()))
-		handler, ok := CDKeyHandlers[msg.Type]
+		handler, ok := CDKeyHandlers[messageId]
 
 		if !ok {
 			cdks.Logger.Warning(fmt.Sprintf("Couldn't find handler for type '%d'", msg.Type))
