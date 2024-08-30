@@ -45,11 +45,11 @@ func (msg *CDKeyMessage) Serialize() ([]byte, error) {
 	}
 
 	msg.Size = uint32(len(encrypted))
-	header := make([]byte, CDKM_HEADER_SIZE)
-	header = append(header, common.WriteU8(msg.Type)...)
-	header = append(header, common.WriteU32BE(msg.Size)...)
-	header = append(header, encrypted...)
-	return header, nil
+	data := make([]byte, 0)
+	data = append(data, common.WriteU8(msg.Type)...)
+	data = append(data, common.WriteU32BE(msg.Size)...)
+	data = append(data, encrypted...)
+	return data, nil
 }
 
 func (msg *CDKeyMessage) String() string {
