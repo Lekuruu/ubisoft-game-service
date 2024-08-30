@@ -4,5 +4,6 @@ use (
 	.
 	./cdkey
 	./common
+	./gsconnect
 	./router
 )
