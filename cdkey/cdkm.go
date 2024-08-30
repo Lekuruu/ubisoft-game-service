@@ -50,19 +50,19 @@ func (msg *CDKeyMessage) Serialize() ([]byte, error) {
 }
 
 func (msg *CDKeyMessage) String() string {
-	messageId := msg.Data[0].(uint8)
-	requestType := msg.Data[1].(uint8)
+	messageId := msg.Data[0].(string)
+	requestType := msg.Data[1].(string)
 	innerData := msg.Data[3].([]interface{})
 
 	return fmt.Sprintf(
-		"CDKeyMessage{Size: %d, Type: %d, MessageId: %d, RequestType: %d, Data: %v, InnerData: %v}",
+		"CDKeyMessage{Size: %d, Type: %d, MessageId: %s, RequestType: %s, Data: %v, InnerData: %v}",
 		msg.Size, msg.Type, messageId, requestType, msg.Data, innerData,
 	)
 }
 
 func ReadCDKeyMessage(client *Client) (*CDKeyMessage, error) {
 	header := make([]byte, CDKM_HEADER_SIZE)
-	_, err := client.Conn.Read(header)
+	_, err := client.Reader.Read(header)
 
 	if err != nil {
 		return nil, err
@@ -74,7 +74,7 @@ func ReadCDKeyMessage(client *Client) (*CDKeyMessage, error) {
 	}
 
 	data := make([]byte, msg.Size)
-	_, err = client.Conn.Read(data)
+	_, err = client.Reader.Read(data)
 
 	if err != nil {
 		return nil, err
