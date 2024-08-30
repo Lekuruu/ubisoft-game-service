@@ -15,9 +15,9 @@ type GSConnect struct {
 }
 
 type GSContext struct {
-	GSConnect *GSConnect
-	Response  http.ResponseWriter
-	Request   *http.Request
+	Response http.ResponseWriter
+	Request  *http.Request
+	Server   *GSConnect
 }
 
 func (gsc *GSConnect) Serve() {
@@ -32,9 +32,9 @@ func (gsc *GSConnect) Serve() {
 func (gsc *GSConnect) withGSContext(handler func(*GSContext)) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		handler(&GSContext{
-			GSConnect: gsc,
-			Response:  w,
-			Request:   r,
+			Server:   gsc,
+			Response: w,
+			Request:  r,
 		})
 	}
 }
