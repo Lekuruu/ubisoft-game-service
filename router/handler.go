@@ -17,8 +17,15 @@ func stillAlive(message *GSMessage, _ *Client) (*GSMessage, error) {
 }
 
 func handleKeyExchange(message *GSMessage, client *Client) (*GSMessage, error) {
-	requestId := message.Data[0].(string)
-	requestArgs := message.Data[1].([]interface{})
+	requestId, err := common.GetStringListItem(message.Data, 0)
+	if err != nil {
+		return nil, err
+	}
+
+	requestArgs, err := common.GetListItem(message.Data, 1)
+	if err != nil {
+		return nil, err
+	}
 
 	response := NewGSMessageFromRequest(message)
 	response.Data = []interface{}{requestId}
@@ -27,7 +34,12 @@ func handleKeyExchange(message *GSMessage, client *Client) (*GSMessage, error) {
 	switch requestId {
 	case "1":
 		// RSA Encryption
-		client.GamePublicKey = common.RsaPublicKeyFromBuffer(requestArgs[2].([]byte))
+		rsaBuffer, err := common.GetBinaryListItem(requestArgs, 2)
+		if err != nil {
+			return nil, err
+		}
+
+		client.GamePublicKey = common.RsaPublicKeyFromBuffer(rsaBuffer)
 		privateKey, err := common.RsaKeygen()
 		if err != nil {
 			return nil, err
@@ -46,7 +58,11 @@ func handleKeyExchange(message *GSMessage, client *Client) (*GSMessage, error) {
 			return nil, errors.New("game public key not initialized")
 		}
 
-		encryptedBlowfishKey := requestArgs[2].([]byte)
+		encryptedBlowfishKey, err := common.GetBinaryListItem(requestArgs, 2)
+		if err != nil {
+			return nil, err
+		}
+
 		blowfishKey, err := client.ServerPrivateKey.Decrypt(rand.Reader, encryptedBlowfishKey, nil)
 		if err != nil {
 			return nil, err
