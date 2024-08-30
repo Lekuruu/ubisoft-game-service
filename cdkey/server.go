@@ -72,6 +72,11 @@ func (cdks *CDKeyServer) HandleClient(client *Client) {
 			break
 		}
 
+		if msg.Type != 211 {
+			cdks.Logger.Warning(fmt.Sprintf("Received message with unknown type '%d'", msg.Type))
+			break
+		}
+
 		requestTypeString, err := common.GetStringListItem(msg.Data, 1)
 		if err != nil {
 			cdks.Logger.Error(fmt.Sprintf("Failed to parse message ID: %s", err))
