@@ -1,0 +1,9 @@
+go 1.22.6
+
+use (
+	.
+	./cdkey
+	./common
+	./gsconnect
+	./router
+)

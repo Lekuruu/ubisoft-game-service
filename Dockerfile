@@ -1,8 +1,14 @@
-FROM python:3.11-slim
+FROM golang:1.22.6
 
+# Copy the source code
 WORKDIR /app
 COPY . .
 
-RUN pip install --no-cache-dir -r requirements.txt
+# Download modules
+RUN go mod download
 
-CMD ["python", "main.py"]
+# Build
+RUN CGO_ENABLED=0 GOOS=linux go build -o ./gs
+
+# Run the compiled binary
+CMD ["/app/gs"]
