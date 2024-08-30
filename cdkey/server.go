@@ -36,7 +36,7 @@ func (cdks *CDKeyServer) Serve() {
 	defer listener.Close()
 
 	for {
-		buffer := make([]byte, 1024)
+		buffer := make([]byte, 512)
 		_, addr, err := listener.ReadFrom(buffer)
 
 		if err != nil {
