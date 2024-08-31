@@ -170,6 +170,13 @@ func handleLobbyLogin(message *GSMessage, client *Client) (*GSMessage, error) {
 	return response, nil
 }
 
+func handleFriendsLogin(message *GSMessage, client *Client) (*GSMessage, error) {
+	response := NewGSMessageFromRequest(message)
+	response.Type = GSM_GSSUCCESS
+	response.Data = []interface{}{common.WriteU8(GSM_LOGINFRIENDS)}
+	return response, nil
+}
+
 func init() {
 	RouterHandlers[GSM_STILLALIVE] = stillAlive
 	RouterHandlers[GSM_KEY_EXCHANGE] = handleKeyExchange
@@ -178,6 +185,7 @@ func init() {
 	RouterHandlers[GSM_LOGINWAITMODULE] = handleWaitModuleLogin
 	RouterHandlers[GSM_PLAYERINFO] = handlePlayerInfo
 	RouterHandlers[GSM_LOBBY_MSG] = handleLobbyMessage
+	RouterHandlers[GSM_LOGINFRIENDS] = handleFriendsLogin
 
 	LobbyHandlers[LOBBY_LOGIN] = handleLobbyLogin
 }
