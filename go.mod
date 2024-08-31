@@ -12,3 +12,13 @@ require (
 )
 
 require golang.org/x/exp v0.0.0-20240823005443-9b4947da3948 // indirect
+
+replace github.com/lekuruu/ubisoft-game-service/cdkey => ./cdkey
+
+replace github.com/lekuruu/ubisoft-game-service/common => ./common
+
+replace github.com/lekuruu/ubisoft-game-service/gsconnect => ./gsconnect
+
+replace github.com/lekuruu/ubisoft-game-service/gsnat => ./gsnat
+
+replace github.com/lekuruu/ubisoft-game-service/router => ./router
