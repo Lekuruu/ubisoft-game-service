@@ -1,0 +1,4 @@
+github.com/lekuruu/ubisoft-game-service/common v0.0.0-20240831105814-85a1b7e9b455 h1:CPRFFUycTmo8cYZB9m/FWJpsS+eQz/rv0dKXL5oL0dM=
+github.com/lekuruu/ubisoft-game-service/common v0.0.0-20240831105814-85a1b7e9b455/go.mod h1:LKMpaEj+QuKr5Y8fKUClky9umEiYJ8N5tKbm8j3WHFk=
+golang.org/x/exp v0.0.0-20240823005443-9b4947da3948 h1:kx6Ds3MlpiUHKj7syVnbp57++8WpuKPcR5yjLBjvLEA=
+golang.org/x/exp v0.0.0-20240823005443-9b4947da3948/go.mod h1:akd2r19cwCdwSwWeIdzYQGa/EZZyqcOdwWiwj5L5eKQ=
