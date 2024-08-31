@@ -146,6 +146,52 @@ const (
 )
 
 const (
+	LOBBY_INFO_REFRESH             = 6
+	LOBBY_GROUP_LEAVE              = 8
+	LOBBY_GROUP_INFO_GET           = 9
+	LOBBY_PLAYER_KICK              = 10
+	LOBBY_CREATE_ROOM              = 12
+	LOBBY_PARENT_GROUP_ID          = 14
+	LOBBY_START_GAME               = 15
+	LOBBY_START_MATCH              = 17
+	LOBBY_LOBBY_DISCONNECTION      = 18
+	LOBBY_LOGIN                    = 21
+	LOBBY_JOIN_LOBBY               = 23
+	LOBBY_JOIN_ROOM                = 24
+	LOBBY_MASTER_NEW               = 27
+	LOBBY_SUBMIT_MATCH             = 30
+	LOBBY_GROUP_CONFIG_UPDATE_RES  = 31
+	LOBBY_UPDATE_PING              = 32
+	LOBBY_GAME_READY               = 33
+	LOBBY_PLAYER_BAN               = 36
+	LOBBY_PLAYER_UNBAN             = 40
+	LOBBY_UPDATE_GAME_INFO         = 41
+	LOBBY_SET_PLAYER_INFO          = 42
+	LOBBY_LOBBY_DISCONNECT_ALL     = 43
+	LOBBY_MATCH_FINISH             = 45
+	LOBBY_GET_ALT_GROUP_INFO       = 46
+	LOBBY_MEMBER_JOIN              = 50
+	LOBBY_MEMBER_LEAVE             = 51
+	LOBBY_GROUP_INFO               = 53
+	LOBBY_NEW_GROUP                = 54
+	LOBBY_GROUP_REMOVE             = 55
+	LOBBY_GAME_STARTED             = 56
+	LOBBY_GROUP_CONFIG_UPDATE      = 57
+	LOBBY_MASTER_CHANGED           = 59
+	LOBBY_KICK_OUT                 = 61
+	LOBBY_MATCH_STARTED            = 62
+	LOBBY_PLAYER_BANNED            = 63
+	LOBBY_PLAYER_BANLIST           = 64
+	LOBBY_MATCH_READY              = 65
+	LOBBY_PLAYER_INFO_UPDATE       = 66
+	LOBBY_PLAYER_UPDATE_STATUS     = 69
+	LOBBY_FINAL_MATCH_RESULTS      = 71
+	LOBBY_PLAYER_GROUP_GET         = 106
+	LOBBY_CHANGE_REQUESTED_LOBBIES = 109
+	LOBBY_MEMBER_LIST              = 151
+)
+
+const (
 	TARGET_R   = 1
 	TARGET_S   = 2
 	TARGET_W   = 3
