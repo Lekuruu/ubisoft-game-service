@@ -5,12 +5,14 @@ import (
 	"crypto/rsa"
 	"errors"
 	"fmt"
+	"strconv"
 
 	"github.com/lekuruu/ubisoft-game-service/common"
 )
 
 // A map to store the handlers for each message type
 var RouterHandlers = map[uint8]func(*GSMessage, *Client) (*GSMessage, error){}
+var LobbyHandlers = map[int]func(*GSMessage, *Client) (*GSMessage, error){}
 
 func stillAlive(message *GSMessage, _ *Client) (*GSMessage, error) {
 	return NewGSMessageFromRequest(message), nil
@@ -135,6 +137,39 @@ func handlePlayerInfo(message *GSMessage, client *Client) (*GSMessage, error) {
 	return response, nil
 }
 
+func handleLobbyMessage(message *GSMessage, client *Client) (*GSMessage, error) {
+	lobbyMessageTypeString, err := common.GetStringListItem(message.Data, 0)
+	if err != nil {
+		return nil, err
+	}
+
+	lobbyMessageType, err := strconv.Atoi(lobbyMessageTypeString)
+	if err != nil {
+		return nil, err
+	}
+
+	handler, ok := LobbyHandlers[lobbyMessageType]
+	if !ok {
+		return nil, fmt.Errorf("lobby handler for '%s' not found", lobbyMessageTypeString)
+	}
+
+	return handler(message, client)
+}
+
+func handleLobbyLogin(message *GSMessage, client *Client) (*GSMessage, error) {
+	// requestArgs, err := common.GetListItem(message.Data, 1)
+	// gameName, err := common.GetStringListItem(requestArgs, 0)
+	// TODO: Validate game name
+
+	response := NewGSMessageFromRequest(message)
+	response.Data = []interface{}{
+		strconv.Itoa(GSM_GSSUCCESS),
+		[]interface{}{strconv.Itoa(LOBBY_LOGIN)},
+	}
+
+	return response, nil
+}
+
 func init() {
 	RouterHandlers[GSM_STILLALIVE] = stillAlive
 	RouterHandlers[GSM_KEY_EXCHANGE] = handleKeyExchange
@@ -142,4 +177,7 @@ func init() {
 	RouterHandlers[GSM_JOINWAITMODULE] = handleWaitModuleJoin
 	RouterHandlers[GSM_LOGINWAITMODULE] = handleWaitModuleLogin
 	RouterHandlers[GSM_PLAYERINFO] = handlePlayerInfo
+	RouterHandlers[GSM_LOBBY_MSG] = handleLobbyMessage
+
+	LobbyHandlers[LOBBY_LOGIN] = handleLobbyLogin
 }
