@@ -1,6 +1,8 @@
 package main
 
 import (
+	"fmt"
+	"os"
 	"strings"
 	"sync"
 
@@ -9,7 +11,67 @@ import (
 	"github.com/lekuruu/ubisoft-game-service/gsconnect"
 	"github.com/lekuruu/ubisoft-game-service/gsnat"
 	"github.com/lekuruu/ubisoft-game-service/router"
+	"github.com/pelletier/go-toml/v2"
 )
+
+type Config struct {
+	Web struct {
+		Host string `toml:"Host"`
+		Port int    `toml:"Port"`
+	} `toml:"Web"`
+	Router struct {
+		Host string `toml:"Host"`
+		Port uint16 `toml:"Port"`
+	} `toml:"Router"`
+	NAT struct {
+		Port uint16 `toml:"Port"`
+	} `toml:"NAT"`
+	CDKey struct {
+		Port uint16 `toml:"Port"`
+	} `toml:"CDKey"`
+	Games        []string `toml:"Games"`
+	ExternalHost string   `toml:"ExternalHost"`
+}
+
+func (c *Config) createGameConfig() map[string]string {
+	config := []string{
+		"[Servers]",
+		fmt.Sprintf("RouterIP0=%s", c.ExternalHost),
+		fmt.Sprintf("RouterPort0=%d", c.Router.Port),
+		fmt.Sprintf("CDKeyServerIP0=%s", c.ExternalHost),
+		fmt.Sprintf("CDKeyServerPort0=%d", c.CDKey.Port),
+		fmt.Sprintf("NATServerIP0=%s", c.ExternalHost),
+		fmt.Sprintf("NATServerPort0=%d", c.NAT.Port),
+		fmt.Sprintf("IRCIP0=%s", c.ExternalHost),
+		fmt.Sprintf("IRCPort0=%d", 6668),
+		fmt.Sprintf("ProxyIP0=%s", c.ExternalHost),
+		fmt.Sprintf("ProxyPort0=%d", 4040),
+	}
+
+	games := make(map[string]string)
+
+	for _, game := range c.Games {
+		games[game] = strings.Join(config, "\n")
+	}
+
+	return games
+}
+
+func loadConfig() (*Config, error) {
+	file, err := os.ReadFile("config.toml")
+	if err != nil {
+		return nil, err
+	}
+
+	var config Config
+
+	err = toml.Unmarshal(file, &config)
+	if err != nil {
+		return nil, err
+	}
+
+	return &config, nil
+}
 
 func runService(wg *sync.WaitGroup, worker func()) {
 	wg.Add(1)
@@ -21,48 +83,35 @@ func runService(wg *sync.WaitGroup, worker func()) {
 }
 
 func main() {
+	config, err := loadConfig()
+
+	if err != nil {
+		fmt.Println("Failed to load 'config.toml' file:", err)
+		return
+	}
+
+	gsc := gsconnect.GSConnect{
+		Host:   config.Web.Host,
+		Port:   config.Web.Port,
+		Games:  config.createGameConfig(),
+		Logger: *common.CreateLogger("GSConnect", common.DEBUG),
+	}
+
 	router := router.Router{
-		Host:   "127.0.0.1",
-		Port:   40000,
+		Host:   config.Router.Host,
+		Port:   config.Router.Port,
 		Logger: *common.CreateLogger("Router", common.DEBUG),
 	}
 
 	cdks := cdkey.CDKeyServer{
-		Port:   44000,
+		Port:   config.CDKey.Port,
 		Logger: *common.CreateLogger("CDKeyServer", common.DEBUG),
 	}
 
-	gsc := gsconnect.GSConnect{
-		Host:   "127.0.0.1",
-		Port:   80,
-		Games:  make(map[string]string),
-		Logger: *common.CreateLogger("GSConnect", common.DEBUG),
-	}
-
 	nat := gsnat.GSNatServer{
-		Port:   7781,
+		Port:   config.NAT.Port,
 		Logger: *common.CreateLogger("GSNatServer", common.DEBUG),
 	}
-
-	scct := []string{
-		"[Servers]",
-		"RouterIP0=127.0.0.1",
-		"RouterPort0=40000",
-		"IRCIP0=127.0.0.1",
-		"IRCPort0=6668",
-		"CDKeyServerIP0=127.0.0.1",
-		"CDKeyServerPort0=44000",
-		"ProxyIP0=127.0.0.1",
-		"ProxyPort0=4040",
-		"NATServerIP0=127.0.0.1",
-		"NATServerPort0=7781",
-	}
-
-	gsc.Games["SPLINTERCELL3PCADVERS"] = strings.Join(scct, "\n")
-	gsc.Games["SPLINTERCELL3PCCOOP"] = strings.Join(scct, "\n")
-	gsc.Games["SPLINTERCELL3PS2US"] = strings.Join(scct, "\n")
-	gsc.Games["SPLINTERCELL3PC"] = strings.Join(scct, "\n")
-	gsc.Games["HEROES_5"] = strings.Join(scct, "\n")
 
 	var wg sync.WaitGroup
 
@@ -73,5 +122,3 @@ func main() {
 
 	wg.Wait()
 }
-
-// TODO: Add configuration for services
