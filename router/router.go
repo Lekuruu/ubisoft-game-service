@@ -56,13 +56,14 @@ func (router *Router) Serve() {
 }
 
 func (router *Router) HandleClient(conn net.Conn) {
-	defer router.OnDisconnect(conn)
 	router.Logger.Info(fmt.Sprintf("-> <%s>", conn.RemoteAddr()))
 
 	client := &Client{
 		Conn:   conn,
 		Server: router,
 	}
+
+	defer router.OnDisconnect(client)
 
 	for {
 		msg, err := ReadGSMessage(client)
@@ -110,11 +111,15 @@ func (router *Router) HandleClient(conn net.Conn) {
 	}
 }
 
-func (router *Router) OnDisconnect(conn net.Conn) {
+func (router *Router) OnDisconnect(client *Client) {
 	if r := recover(); r != nil {
 		router.Logger.Error(fmt.Sprintf("Panic: %s", r))
 	}
 
-	router.Logger.Info(fmt.Sprintf("-> <%s> Disconnected", conn.RemoteAddr()))
-	conn.Close()
+	if client.Player != nil {
+		router.Players.Remove(client.Player)
+	}
+
+	router.Logger.Info(fmt.Sprintf("-> <%s> Disconnected", client.Conn.RemoteAddr()))
+	client.Conn.Close()
 }
