@@ -3,6 +3,7 @@ package router
 import (
 	"errors"
 	"fmt"
+	"strconv"
 
 	"github.com/lekuruu/ubisoft-game-service/common"
 )
@@ -121,14 +122,15 @@ func NewGSMessageFromRequest(request *GSMessage) *GSMessage {
 	}
 }
 
-func NewGSErrorMessage(err uint8, request *GSMessage) *GSMessage {
+func NewGSErrorMessage(err int, request *GSMessage) *GSMessage {
+	// TODO: Response data seems to be wrong...
 	return &GSMessage{
+		Type:     GSM_GSFAIL,
 		Property: request.Property,
 		Priority: request.Priority,
-		Type:     GSM_GSFAIL,
 		Sender:   request.Receiver,
 		Receiver: request.Sender,
-		Data:     []interface{}{string(err)},
+		Data:     []interface{}{common.WriteU8(request.Type), strconv.Itoa(err)},
 	}
 }
 
