@@ -133,6 +133,7 @@ const (
 	GSM_GROUPSZDATA            = 212
 	GSM_KEY_EXCHANGE           = 219
 	GSM_REQUESTPORTID          = 221
+	GSM_MOTD_REQUEST           = 222
 )
 
 const (

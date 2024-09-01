@@ -252,6 +252,20 @@ func handleFriendsLogin(message *GSMessage, client *Client) (*GSMessage, error) 
 	return response, nil
 }
 
+func handleMotdRequest(message *GSMessage, client *Client) (*GSMessage, error) {
+	// language := common.GetStringListItem(message.Data, 0)
+	response := NewGSMessageFromRequest(message)
+	response.Type = GSM_GSSUCCESS
+	response.Data = []interface{}{
+		common.WriteU8(GSM_MOTD_REQUEST),
+		[]interface{}{
+			"Welcome to the server!",  // szUbiMOTD (UBI's MOTD)
+			"This is a test message.", // szGameMOTD (Game's MOTD)
+		},
+	}
+	return response, nil
+}
+
 func init() {
 	RouterHandlers[GSM_STILLALIVE] = stillAlive
 	RouterHandlers[GSM_KEY_EXCHANGE] = handleKeyExchange
@@ -261,6 +275,7 @@ func init() {
 	RouterHandlers[GSM_PLAYERINFO] = handlePlayerInfo
 	RouterHandlers[GSM_LOBBY_MSG] = handleLobbyMessage
 	RouterHandlers[GSM_LOGINFRIENDS] = handleFriendsLogin
+	RouterHandlers[GSM_MOTD_REQUEST] = handleMotdRequest
 
 	LobbyHandlers[LOBBY_LOGIN] = handleLobbyLogin
 }
