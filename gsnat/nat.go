@@ -59,7 +59,7 @@ func (cdks *GSNatServer) HandleClient(client *Client) {
 		srp, err := ReadSRPPacket(client)
 
 		if srp == nil {
-			continue
+			break
 		}
 
 		if err == io.EOF {
@@ -68,7 +68,7 @@ func (cdks *GSNatServer) HandleClient(client *Client) {
 
 		if err != nil {
 			cdks.Logger.Error(fmt.Sprintf("Failed to parse packet: %s", err))
-			return
+			break
 		}
 
 		cdks.Logger.Debug(fmt.Sprintf("-> %s", srp.String()))
