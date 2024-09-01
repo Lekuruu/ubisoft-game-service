@@ -15,6 +15,10 @@ func (collection *PlayerCollection) Remove(player *Player) {
 	delete(collection.nameMap, player.Name)
 }
 
+func (collection *PlayerCollection) Count() int {
+	return len(collection.idMap)
+}
+
 func (collection *PlayerCollection) ByID(id int) *Player {
 	if val, ok := collection.idMap[id]; ok {
 		return val
@@ -41,8 +45,16 @@ func (collection *PlayerCollection) All() []Player {
 	return players
 }
 
-func (collection *PlayerCollection) Count() int {
-	return len(collection.idMap)
+func (collection *PlayerCollection) ByGame(game string) []Player {
+	players := make([]Player, 0)
+
+	for _, player := range collection.idMap {
+		if player.Game == game {
+			players = append(players, *player)
+		}
+	}
+
+	return players
 }
 
 func NewPlayerCollection() PlayerCollection {
