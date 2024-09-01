@@ -176,9 +176,20 @@ func handleWaitModuleLogin(message *GSMessage, client *Client) (*GSMessage, erro
 }
 
 func handlePlayerInfo(message *GSMessage, client *Client) (*GSMessage, error) {
+	targetName, err := common.GetStringListItem(message.Data, 0)
+	if err != nil {
+		return nil, err
+	}
+
+	player := client.Server.Players.ByName(targetName)
+	if player == nil {
+		// TODO: Handle this case properly
+		return nil, errors.New("player not found")
+	}
+
 	response := NewGSMessageFromRequest(message)
 	response.Type = GSM_GSSUCCESS
-	playerData := []interface{}{"findme1", "findme2", "findme3", "findme4", "findme5", "findme6", "findme7"}
+	playerData := []interface{}{player.Nick, player.Name, "findme3", "findme4", "findme5", "findme6", "findme7"}
 	response.Data = []interface{}{common.WriteU8(GSM_PLAYERINFO), playerData}
 	return response, nil
 }
