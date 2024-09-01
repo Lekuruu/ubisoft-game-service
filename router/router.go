@@ -11,14 +11,18 @@ import (
 )
 
 type Router struct {
-	Host   string
-	Port   uint16
-	Logger common.Logger
+	Host    string
+	Port    uint16
+	Games   []string
+	Logger  common.Logger
+	Players PlayerCollection
+	Pending map[string]string
 }
 
 type Client struct {
 	Conn              net.Conn
 	Server            *Router
+	Player            *Player
 	GamePublicKey     *rsa.PublicKey
 	GameBlowfishKey   []byte
 	ServerPublicKey   *rsa.PublicKey
@@ -27,6 +31,9 @@ type Client struct {
 }
 
 func (router *Router) Serve() {
+	router.Players = NewPlayerCollection()
+	router.Pending = make(map[string]string)
+
 	listener, err := net.Listen("tcp", fmt.Sprintf("%s:%d", router.Host, router.Port))
 
 	if err != nil {
@@ -49,13 +56,14 @@ func (router *Router) Serve() {
 }
 
 func (router *Router) HandleClient(conn net.Conn) {
-	defer router.OnDisconnect(conn)
 	router.Logger.Info(fmt.Sprintf("-> <%s>", conn.RemoteAddr()))
 
 	client := &Client{
 		Conn:   conn,
 		Server: router,
 	}
+
+	defer router.OnDisconnect(client)
 
 	for {
 		msg, err := ReadGSMessage(client)
@@ -82,7 +90,7 @@ func (router *Router) HandleClient(conn net.Conn) {
 
 		if err != nil {
 			router.Logger.Error(fmt.Sprintf("Failed to handle message: %s", err))
-			break
+			response = NewGSErrorMessage(ERRORROUTER_UNKNOWNERROR, msg)
 		}
 
 		serialized, err := response.Serialize(client)
@@ -103,11 +111,15 @@ func (router *Router) HandleClient(conn net.Conn) {
 	}
 }
 
-func (router *Router) OnDisconnect(conn net.Conn) {
+func (router *Router) OnDisconnect(client *Client) {
 	if r := recover(); r != nil {
 		router.Logger.Error(fmt.Sprintf("Panic: %s", r))
 	}
 
-	router.Logger.Info(fmt.Sprintf("-> <%s> Disconnected", conn.RemoteAddr()))
-	conn.Close()
+	if client.Player != nil {
+		router.Players.Remove(client.Player)
+	}
+
+	router.Logger.Info(fmt.Sprintf("-> <%s> Disconnected", client.Conn.RemoteAddr()))
+	client.Conn.Close()
 }

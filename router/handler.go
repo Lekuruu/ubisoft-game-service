@@ -5,7 +5,10 @@ import (
 	"crypto/rsa"
 	"errors"
 	"fmt"
+	"sort"
 	"strconv"
+	"strings"
+	"time"
 
 	"github.com/lekuruu/ubisoft-game-service/common"
 )
@@ -90,10 +93,28 @@ func handleKeyExchange(message *GSMessage, client *Client) (*GSMessage, error) {
 }
 
 func handleLogin(message *GSMessage, client *Client) (*GSMessage, error) {
-	// username := message.Data[0].(string)
-	// password := message.Data[1].(string)
-	// game := message.Data[2].(string)
-	// TODO: Implement login logic
+	username, err := common.GetStringListItem(message.Data, 0)
+	if err != nil {
+		return nil, err
+	}
+
+	if player := client.Server.Players.ByName(username); player != nil {
+		// Player already logged in
+		return NewGSErrorMessage(ERRORROUTER_NOTDISCONNECTED, message), nil
+	}
+
+	// TODO: Implement login validation
+	// password, err := common.GetStringListItem(message.Data, 1)
+	// game, err := common.GetStringListItem(message.Data, 2)
+
+	// Setup pending waitmodule login
+	ipAddress := strings.Split(client.Conn.RemoteAddr().String(), ":")[0]
+	client.Server.Pending[ipAddress] = username
+
+	// Remove pending login after 5 seconds
+	time.AfterFunc(5*time.Second, func() {
+		delete(client.Server.Pending, ipAddress)
+	})
 
 	response := NewGSMessageFromRequest(message)
 	response.Property = PROPERTY_GS
@@ -119,8 +140,38 @@ func handleWaitModuleJoin(message *GSMessage, client *Client) (*GSMessage, error
 }
 
 func handleWaitModuleLogin(message *GSMessage, client *Client) (*GSMessage, error) {
-	// username := message.Data[0].(string)
-	// TODO: Verify login
+	username, err := common.GetStringListItem(message.Data, 0)
+	if err != nil {
+		return nil, err
+	}
+
+	if player := client.Server.Players.ByName(username); player != nil {
+		// Player already logged in
+		return NewGSErrorMessage(ERRORROUTER_NOTDISCONNECTED, message), nil
+	}
+
+	ipAddress := strings.Split(client.Conn.RemoteAddr().String(), ":")[0]
+	pendingUsername, ok := client.Server.Pending[ipAddress]
+
+	if !ok {
+		return nil, errors.New("ip not found in pending login list")
+	}
+
+	if pendingUsername != username {
+		return nil, errors.New("username mismatch")
+	}
+
+	// Remove pending login
+	delete(client.Server.Pending, ipAddress)
+
+	player := &Player{
+		Client: *client,
+		Name:   username,
+		Nick:   username,
+	}
+
+	client.Player = player
+	client.Server.Players.Add(player)
 
 	response := NewGSMessageFromRequest(message)
 	response.Property = PROPERTY_GS
@@ -130,9 +181,19 @@ func handleWaitModuleLogin(message *GSMessage, client *Client) (*GSMessage, erro
 }
 
 func handlePlayerInfo(message *GSMessage, client *Client) (*GSMessage, error) {
+	targetName, err := common.GetStringListItem(message.Data, 0)
+	if err != nil {
+		return nil, err
+	}
+
+	player := client.Server.Players.ByName(targetName)
+	if player == nil {
+		return NewGSErrorMessage(ERRORROUTER_NOTREGISTERED, message), nil
+	}
+
 	response := NewGSMessageFromRequest(message)
 	response.Type = GSM_GSSUCCESS
-	playerData := []interface{}{"findme1", "findme2", "findme3", "findme4", "findme5", "findme6", "findme7"}
+	playerData := []interface{}{player.Nick, player.Name, "findme3", "findme4", "findme5", "findme6", "findme7"}
 	response.Data = []interface{}{common.WriteU8(GSM_PLAYERINFO), playerData}
 	return response, nil
 }
@@ -157,10 +218,24 @@ func handleLobbyMessage(message *GSMessage, client *Client) (*GSMessage, error) 
 }
 
 func handleLobbyLogin(message *GSMessage, client *Client) (*GSMessage, error) {
-	// requestArgs, err := common.GetListItem(message.Data, 1)
-	// gameName, err := common.GetStringListItem(requestArgs, 0)
-	// TODO: Validate game name
+	requestArgs, err := common.GetListItem(message.Data, 1)
+	if err != nil {
+		return nil, err
+	}
 
+	gameName, err := common.GetStringListItem(requestArgs, 0)
+	if err != nil {
+		return nil, err
+	}
+
+	i := sort.SearchStrings(client.Server.Games, gameName)
+
+	// Check if game is supported
+	if i >= len(client.Server.Games) || client.Server.Games[i] != gameName {
+		return nil, errors.New("game not supported")
+	}
+
+	client.Player.Game = gameName
 	response := NewGSMessageFromRequest(message)
 	response.Data = []interface{}{
 		strconv.Itoa(GSM_GSSUCCESS),

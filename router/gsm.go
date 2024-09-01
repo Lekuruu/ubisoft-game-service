@@ -3,212 +3,13 @@ package router
 import (
 	"errors"
 	"fmt"
+	"strconv"
 
 	"github.com/lekuruu/ubisoft-game-service/common"
 )
 
 const MAX_PACKET_SIZE = 0x50000
 const GSMSG_HEADER_SIZE = 6
-
-const (
-	GSM_NEWUSERREQUEST         = 1
-	GSM_CONNECTIONREQUEST      = 2
-	GSM_PLAYERNEW              = 3
-	GSM_DISCONNECTION          = 4
-	GSM_PLAYERREMOVED          = 5
-	GSM_EVENT_UDPCONNECT       = 6
-	GSM_NEWS                   = 7
-	GSM_SEARCHPLAYER           = 8
-	GSM_REMOVEACCOUNT          = 9
-	GSM_SERVERSLIST            = 11
-	GSM_SESSIONLIST            = 13
-	GSM_PLAYERLIST             = 15
-	GSM_GETGROUPINFO           = 16
-	GSM_GROUPINFO              = 17
-	GSM_GETPLAYERINFO          = 18
-	GSM_PLAYERINFO             = 19
-	GSM_CHATALL                = 20
-	GSM_CHATLIST               = 21
-	GSM_CHATSESSION            = 22
-	GSM_CHAT                   = 24
-	GSM_CREATESESSION          = 26
-	GSM_SESSIONNEW             = 27
-	GSM_JOINSESSION            = 28
-	GSM_JOINNEW                = 31
-	GSM_LEAVESESSION           = 32
-	GSM_JOINLEAVE              = 33
-	GSM_SESSIONREMOVE          = 34
-	GSM_GSSUCCESS              = 38
-	GSM_GSFAIL                 = 39
-	GSM_BEGINGAME              = 40
-	GSM_UPDATEPLAYERINFO       = 45
-	GSM_MASTERCHANGED          = 48
-	GSM_UPDATESESSIONSTATE     = 51
-	GSM_URGENTMESSAGE          = 52
-	GSM_NEWWAITMODULE          = 54
-	GSM_KILLMODULE             = 55
-	GSM_STILLALIVE             = 58
-	GSM_PING                   = 59
-	GSM_PLAYERKICK             = 60
-	GSM_PLAYERMUTE             = 61
-	GSM_ALLOWGAME              = 62
-	GSM_FORBIDGAME             = 63
-	GSM_GAMELIST               = 64
-	GSM_UPDATEADVERTISMEMENTS  = 65
-	GSM_UPDATENEWS             = 66
-	GSM_VERSIONLIST            = 67
-	GSM_UPDATEVERSIONS         = 68
-	GSM_UPDATEDISTANTROUTERS   = 70
-	GSM_ADMINLOGIN             = 71
-	GSM_STAT_PLAYER            = 72
-	GSM_STAT_GAME              = 73
-	GSM_UPDATEFRIEND           = 74
-	GSM_ADDFRIEND              = 75
-	GSM_DELFRIEND              = 76
-	GSM_LOGINWAITMODULE        = 77
-	GSM_LOGINFRIENDS           = 78
-	GSM_ADDIGNOREFRIEND        = 79
-	GSM_DELIGNOREFRIEND        = 80
-	GSM_STATUSCHANGE           = 81
-	GSM_JOINARENA              = 82
-	GSM_LEAVEARENA             = 83
-	GSM_IGNORELIST             = 84
-	GSM_IGNOREFRIEND           = 85
-	GSM_GETARENA               = 86
-	GSM_GETSESSION             = 87
-	GSM_PAGEPLAYER             = 88
-	GSM_FRIENDLIST             = 89
-	GSM_PEERMSG                = 90
-	GSM_PEERPLAYER             = 91
-	GSM_DISCONNECTFRIENDS      = 92
-	GSM_JOINWAITMODULE         = 93
-	GSM_LOGINSESSION           = 94
-	GSM_DISCONNECTSESSION      = 95
-	GSM_PLAYERDISCONNECT       = 96
-	GSM_ADVERTISEMENT          = 97
-	GSM_MODIFYUSER             = 98
-	GSM_STARTGAME              = 99
-	GSM_CHANGEVERSION          = 100
-	GSM_PAGER                  = 101
-	GSM_LOGIN                  = 102
-	GSM_PHOTO                  = 103
-	GSM_LOGINARENA             = 104
-	GSM_SQLCREATE              = 106
-	GSM_SQLSELECT              = 107
-	GSM_SQLDELETE              = 108
-	GSM_SQLSET                 = 109
-	GSM_SQLSTAT                = 110
-	GSM_SQLQUERY               = 111
-	GSM_ROUTEURLIST            = 127
-	GSM_DISTANCEVECTOR         = 131
-	GSM_WRAPPEDMESSAGE         = 132
-	GSM_CHANGEFRIEND           = 133
-	GSM_NEWRELFRIEND           = 134
-	GSM_DELRELFRIEND           = 135
-	GSM_NEWIGNOREFRIEND        = 136
-	GSM_DELETEIGNOREFRIEND     = 137
-	GSM_ARENACONNECTION        = 138
-	GSM_ARENADISCONNECTION     = 139
-	GSM_ARENAWAITMODULE        = 140
-	GSM_ARENANEW               = 141
-	GSM_NEWBASICGROUP          = 143
-	GSM_ARENAREMOVED           = 144
-	GSM_DELETEBASICGROUP       = 145
-	GSM_SESSIONSBEGIN          = 146
-	GSM_GROUPDATA              = 148
-	GSM_ARENA_MESSAGE          = 151
-	GSM_ARENALISTREQUEST       = 157
-	GSM_ROUTERPLAYERNEW        = 158
-	GSM_BASEGROUPREQUEST       = 159
-	GSM_UPDATEPLAYERPING       = 166
-	GSM_UPDATEGROUPSIZE        = 169
-	GSM_SLEEP                  = 179
-	GSM_WAKEUP                 = 180
-	GSM_SYSTEMPAGE             = 181
-	GSM_SESSIONOPEN            = 189
-	GSM_SESSIONCLOSE           = 190
-	GSM_LOGINCLANMANAGER       = 192
-	GSM_DISCONNECTCLANMANAGER  = 193
-	GSM_CLANMANAGERPAGE        = 194
-	GSM_UPDATECLANPLAYER       = 195
-	GSM_PLAYERCLANS            = 196
-	GSM_GETPERSISTANTGROUPINFO = 199
-	GSM_UPDATEGROUPPING        = 202
-	GSM_DEFERREDGAMESTARTED    = 203
-	GSM_PROXY_HANDLER          = 204
-	GSM_BEGINCLIENTHOSTGAME    = 205
-	GSM_LOBBY_MSG              = 209
-	GSM_LOBBYSERVERLOGIN       = 210
-	GSM_SETGROUPSZDATA         = 211
-	GSM_GROUPSZDATA            = 212
-	GSM_KEY_EXCHANGE           = 219
-	GSM_REQUESTPORTID          = 221
-)
-
-const (
-	LOBBY_INFO_REFRESH             = 6
-	LOBBY_GROUP_LEAVE              = 8
-	LOBBY_GROUP_INFO_GET           = 9
-	LOBBY_PLAYER_KICK              = 10
-	LOBBY_CREATE_ROOM              = 12
-	LOBBY_PARENT_GROUP_ID          = 14
-	LOBBY_START_GAME               = 15
-	LOBBY_START_MATCH              = 17
-	LOBBY_LOBBY_DISCONNECTION      = 18
-	LOBBY_LOGIN                    = 21
-	LOBBY_JOIN_LOBBY               = 23
-	LOBBY_JOIN_ROOM                = 24
-	LOBBY_MASTER_NEW               = 27
-	LOBBY_SUBMIT_MATCH             = 30
-	LOBBY_GROUP_CONFIG_UPDATE_RES  = 31
-	LOBBY_UPDATE_PING              = 32
-	LOBBY_GAME_READY               = 33
-	LOBBY_PLAYER_BAN               = 36
-	LOBBY_PLAYER_UNBAN             = 40
-	LOBBY_UPDATE_GAME_INFO         = 41
-	LOBBY_SET_PLAYER_INFO          = 42
-	LOBBY_LOBBY_DISCONNECT_ALL     = 43
-	LOBBY_MATCH_FINISH             = 45
-	LOBBY_GET_ALT_GROUP_INFO       = 46
-	LOBBY_MEMBER_JOIN              = 50
-	LOBBY_MEMBER_LEAVE             = 51
-	LOBBY_GROUP_INFO               = 53
-	LOBBY_NEW_GROUP                = 54
-	LOBBY_GROUP_REMOVE             = 55
-	LOBBY_GAME_STARTED             = 56
-	LOBBY_GROUP_CONFIG_UPDATE      = 57
-	LOBBY_MASTER_CHANGED           = 59
-	LOBBY_KICK_OUT                 = 61
-	LOBBY_MATCH_STARTED            = 62
-	LOBBY_PLAYER_BANNED            = 63
-	LOBBY_PLAYER_BANLIST           = 64
-	LOBBY_MATCH_READY              = 65
-	LOBBY_PLAYER_INFO_UPDATE       = 66
-	LOBBY_PLAYER_UPDATE_STATUS     = 69
-	LOBBY_FINAL_MATCH_RESULTS      = 71
-	LOBBY_PLAYER_GROUP_GET         = 106
-	LOBBY_CHANGE_REQUESTED_LOBBIES = 109
-	LOBBY_MEMBER_LIST              = 151
-)
-
-const (
-	TARGET_R   = 1
-	TARGET_S   = 2
-	TARGET_W   = 3
-	TARGET_P   = 4
-	TARGET_AP  = 5
-	TARGET_B   = 6
-	TARGET_LP  = 7
-	TARGET_UNK = 8
-	TARGET_G   = 9
-	TARGET_A   = 10
-)
-
-const (
-	PROPERTY_GS         = 0
-	PROPERTY_GAME       = 1
-	PROPERTY_GS_ENCRYPT = 2
-)
 
 type GSMessage struct {
 	Size     uint32
@@ -318,6 +119,18 @@ func NewGSMessageFromRequest(request *GSMessage) *GSMessage {
 		Sender:   request.Receiver,
 		Receiver: request.Sender,
 		Data:     request.Data,
+	}
+}
+
+func NewGSErrorMessage(err int, request *GSMessage) *GSMessage {
+	// TODO: Response data seems to be wrong...
+	return &GSMessage{
+		Type:     GSM_GSFAIL,
+		Property: request.Property,
+		Priority: request.Priority,
+		Sender:   request.Receiver,
+		Receiver: request.Sender,
+		Data:     []interface{}{common.WriteU8(request.Type), strconv.Itoa(err)},
 	}
 }
 
