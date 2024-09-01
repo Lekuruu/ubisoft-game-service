@@ -188,3 +188,13 @@ func GetBoolListItem(data []interface{}, index int) (bool, error) {
 
 	return bin[0] == 1, nil
 }
+
+func GetU32ListItem(data []interface{}, index int) (uint32, error) {
+	bin, err := GetBinaryListItem(data, index)
+
+	if err != nil {
+		return 0, err
+	}
+
+	return ReadU32(bin), nil
+}
