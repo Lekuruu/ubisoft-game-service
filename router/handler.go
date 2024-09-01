@@ -98,18 +98,38 @@ func handleLogin(message *GSMessage, client *Client) (*GSMessage, error) {
 		return nil, err
 	}
 
+	version, err := common.GetStringListItem(message.Data, 2)
+	if err != nil {
+		return nil, err
+	}
+
+	public, err := common.GetBoolListItem(message.Data, 3)
+	if err != nil {
+		return nil, err
+	}
+
+	// TODO: Implement login validation
+	// password, err := common.GetStringListItem(message.Data, 1)
+
 	if player := client.Server.Players.ByName(username); player != nil {
 		// Player already logged in
 		return NewGSErrorMessage(ERRORROUTER_NOTDISCONNECTED, message), nil
 	}
 
-	// TODO: Implement login validation
-	// password, err := common.GetStringListItem(message.Data, 1)
-	// game, err := common.GetStringListItem(message.Data, 2)
+	// Create initial player object
+	player := &Player{
+		Name:      username,
+		Version:   version,
+		Public:    public,
+		Firstname: "", // TODO
+		Surname:   "", // TODO
+		Country:   "", // TODO
+		Email:     "", // TODO
+	}
 
-	// Setup pending waitmodule login
+	// Add player to pending waitmodule logins
 	ipAddress := strings.Split(client.Conn.RemoteAddr().String(), ":")[0]
-	client.Server.Pending[ipAddress] = username
+	client.Server.Pending[ipAddress] = player
 
 	// Remove pending login after 5 seconds
 	time.AfterFunc(5*time.Second, func() {
@@ -151,25 +171,20 @@ func handleWaitModuleLogin(message *GSMessage, client *Client) (*GSMessage, erro
 	}
 
 	ipAddress := strings.Split(client.Conn.RemoteAddr().String(), ":")[0]
-	pendingUsername, ok := client.Server.Pending[ipAddress]
+	player, ok := client.Server.Pending[ipAddress]
 
 	if !ok {
 		return nil, errors.New("ip not found in pending login list")
 	}
 
-	if pendingUsername != username {
+	if player.Name != username {
 		return nil, errors.New("username mismatch")
 	}
 
 	// Remove pending login
 	delete(client.Server.Pending, ipAddress)
 
-	player := &Player{
-		Client: *client,
-		Name:   username,
-		Nick:   username,
-	}
-
+	player.Client = *client
 	client.Player = player
 	client.Server.Players.Add(player)
 
@@ -191,9 +206,17 @@ func handlePlayerInfo(message *GSMessage, client *Client) (*GSMessage, error) {
 		return NewGSErrorMessage(ERRORROUTER_NOTREGISTERED, message), nil
 	}
 
+	if !player.Public && player != client.Player {
+		return NewGSErrorMessage(ERRORROUTER_NOTREGISTERED, message), nil
+	}
+
+	playerData := []interface{}{
+		player.Name, player.Surname, player.Firstname,
+		player.Country, player.Email, "IRCID", player.IpAddress(),
+	}
+
 	response := NewGSMessageFromRequest(message)
 	response.Type = GSM_GSSUCCESS
-	playerData := []interface{}{player.Nick, player.Name, "findme3", "findme4", "findme5", "findme6", "findme7"}
 	response.Data = []interface{}{common.WriteU8(GSM_PLAYERINFO), playerData}
 	return response, nil
 }

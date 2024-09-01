@@ -16,7 +16,7 @@ type Router struct {
 	Games   []string
 	Logger  common.Logger
 	Players PlayerCollection
-	Pending map[string]string
+	Pending map[string]*Player
 }
 
 type Client struct {
@@ -32,7 +32,7 @@ type Client struct {
 
 func (router *Router) Serve() {
 	router.Players = NewPlayerCollection()
-	router.Pending = make(map[string]string)
+	router.Pending = make(map[string]*Player)
 
 	listener, err := net.Listen("tcp", fmt.Sprintf("%s:%d", router.Host, router.Port))
 
