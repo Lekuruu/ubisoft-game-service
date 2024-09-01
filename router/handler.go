@@ -5,7 +5,10 @@ import (
 	"crypto/rsa"
 	"errors"
 	"fmt"
+	"sort"
 	"strconv"
+	"strings"
+	"time"
 
 	"github.com/lekuruu/ubisoft-game-service/common"
 )
@@ -90,10 +93,27 @@ func handleKeyExchange(message *GSMessage, client *Client) (*GSMessage, error) {
 }
 
 func handleLogin(message *GSMessage, client *Client) (*GSMessage, error) {
-	// username := message.Data[0].(string)
-	// password := message.Data[1].(string)
-	// game := message.Data[2].(string)
-	// TODO: Implement login logic
+	username, err := common.GetStringListItem(message.Data, 0)
+	if err != nil {
+		return nil, err
+	}
+
+	if player := client.Server.Players.ByName(username); player != nil {
+		return nil, errors.New("player already connected")
+	}
+
+	// TODO: Implement login validation
+	// password, err := common.GetStringListItem(message.Data, 1)
+	// game, err := common.GetStringListItem(message.Data, 2)
+
+	// Setup pending waitmodule login
+	ipAddress := strings.Split(client.Conn.RemoteAddr().String(), ":")[0]
+	client.Server.Pending[ipAddress] = username
+
+	// Remove pending login after 5 seconds
+	time.AfterFunc(5*time.Second, func() {
+		delete(client.Server.Pending, ipAddress)
+	})
 
 	response := NewGSMessageFromRequest(message)
 	response.Property = PROPERTY_GS
@@ -119,8 +139,34 @@ func handleWaitModuleJoin(message *GSMessage, client *Client) (*GSMessage, error
 }
 
 func handleWaitModuleLogin(message *GSMessage, client *Client) (*GSMessage, error) {
-	// username := message.Data[0].(string)
-	// TODO: Verify login
+	username, err := common.GetStringListItem(message.Data, 0)
+	if err != nil {
+		return nil, err
+	}
+
+	if player := client.Server.Players.ByName(username); player != nil {
+		return nil, errors.New("player already connected")
+	}
+
+	ipAddress := strings.Split(client.Conn.RemoteAddr().String(), ":")[0]
+	pendingUsername, ok := client.Server.Pending[ipAddress]
+
+	if !ok {
+		return nil, errors.New("ip not found in pending login list")
+	}
+
+	if pendingUsername != username {
+		return nil, errors.New("username mismatch")
+	}
+
+	player := &Player{
+		Client: *client,
+		Name:   username,
+		Nick:   username,
+	}
+
+	client.Player = player
+	client.Server.Players.Add(player)
 
 	response := NewGSMessageFromRequest(message)
 	response.Property = PROPERTY_GS
