@@ -269,6 +269,19 @@ func handleLobbyLogin(message *GSMessage, client *Client) (*GSMessage, error) {
 }
 
 func handleFriendsLogin(message *GSMessage, client *Client) (*GSMessage, error) {
+	status, err := common.GetU32ListItem(message.Data, 0)
+	if err != nil {
+		return nil, err
+	}
+
+	mood, err := common.GetU32ListItem(message.Data, 1)
+	if err != nil {
+		return nil, err
+	}
+
+	client.Player.Status = status
+	client.Player.Mood = mood
+
 	response := NewGSMessageFromRequest(message)
 	response.Type = GSM_GSSUCCESS
 	response.Data = []interface{}{common.WriteU8(GSM_LOGINFRIENDS)}

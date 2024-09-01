@@ -16,6 +16,8 @@ type Player struct {
 	Game      string
 	Version   string
 	Public    bool
+	Status    uint32
+	Mood      uint32
 }
 
 func (player *Player) IpAddress() string {
