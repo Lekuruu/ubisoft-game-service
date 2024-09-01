@@ -90,7 +90,7 @@ func (router *Router) HandleClient(conn net.Conn) {
 
 		if err != nil {
 			router.Logger.Error(fmt.Sprintf("Failed to handle message: %s", err))
-			break
+			response = NewGSErrorMessage(ERRORROUTER_UNKNOWNERROR, msg)
 		}
 
 		serialized, err := response.Serialize(client)
