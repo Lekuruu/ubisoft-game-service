@@ -203,10 +203,24 @@ func handleLobbyMessage(message *GSMessage, client *Client) (*GSMessage, error) 
 }
 
 func handleLobbyLogin(message *GSMessage, client *Client) (*GSMessage, error) {
-	// requestArgs, err := common.GetListItem(message.Data, 1)
-	// gameName, err := common.GetStringListItem(requestArgs, 0)
-	// TODO: Validate game name
+	requestArgs, err := common.GetListItem(message.Data, 1)
+	if err != nil {
+		return nil, err
+	}
 
+	gameName, err := common.GetStringListItem(requestArgs, 0)
+	if err != nil {
+		return nil, err
+	}
+
+	i := sort.SearchStrings(client.Server.Games, gameName)
+
+	// Check if game is supported
+	if i >= len(client.Server.Games) || client.Server.Games[i] != gameName {
+		return nil, errors.New("game not supported")
+	}
+
+	client.Player.Game = gameName
 	response := NewGSMessageFromRequest(message)
 	response.Data = []interface{}{
 		strconv.Itoa(GSM_GSSUCCESS),
