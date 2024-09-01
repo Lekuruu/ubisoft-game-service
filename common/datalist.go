@@ -178,3 +178,13 @@ func GetListItem(data []interface{}, index int) ([]interface{}, error) {
 
 	return nil, errors.New("item is not a list")
 }
+
+func GetBoolListItem(data []interface{}, index int) (bool, error) {
+	bin, err := GetBinaryListItem(data, index)
+
+	if err != nil {
+		return false, err
+	}
+
+	return bin[0] == 1, nil
+}
