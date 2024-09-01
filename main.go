@@ -1,8 +1,8 @@
 package main
 
 import (
+	"flag"
 	"fmt"
-	"os"
 	"strings"
 	"sync"
 
@@ -11,26 +11,25 @@ import (
 	"github.com/lekuruu/ubisoft-game-service/gsconnect"
 	"github.com/lekuruu/ubisoft-game-service/gsnat"
 	"github.com/lekuruu/ubisoft-game-service/router"
-	"github.com/pelletier/go-toml/v2"
 )
 
 type Config struct {
 	Web struct {
-		Host string `toml:"Host"`
-		Port int    `toml:"Port"`
-	} `toml:"Web"`
+		Host string
+		Port int
+	}
 	Router struct {
-		Host string `toml:"Host"`
-		Port uint16 `toml:"Port"`
-	} `toml:"Router"`
+		Host string
+		Port int
+	}
 	NAT struct {
-		Port uint16 `toml:"Port"`
-	} `toml:"NAT"`
+		Port int
+	}
 	CDKey struct {
-		Port uint16 `toml:"Port"`
-	} `toml:"CDKey"`
-	Games        []string `toml:"Games"`
-	ExternalHost string   `toml:"ExternalHost"`
+		Port int
+	}
+	Games        []string
+	ExternalHost string
 }
 
 func (c *Config) createGameConfig() map[string]string {
@@ -58,16 +57,35 @@ func (c *Config) createGameConfig() map[string]string {
 }
 
 func loadConfig() (*Config, error) {
-	file, err := os.ReadFile("config.toml")
-	if err != nil {
-		return nil, err
-	}
-
 	var config Config
 
-	err = toml.Unmarshal(file, &config)
-	if err != nil {
-		return nil, err
+	flag.StringVar(&config.Web.Host, "web-host", "0.0.0.0", "Web server host")
+	flag.IntVar(&config.Web.Port, "web-port", 80, "Web server port")
+
+	flag.StringVar(&config.Router.Host, "router-host", "0.0.0.0", "Router server host")
+	flag.IntVar(&config.Router.Port, "router-port", 40000, "Router server port")
+
+	flag.IntVar(&config.NAT.Port, "nat-port", 45000, "NAT server port")
+	flag.IntVar(&config.CDKey.Port, "cdkey-port", 44000, "CDKey server port")
+
+	flag.StringVar(&config.ExternalHost, "external-host", "127.0.0.1", "External host address")
+	flag.Parse()
+
+	// Default games list
+	config.Games = []string{
+		"SPLINTERCELL3PCADVERS",
+		"SPLINTERCELL3PCCOOP",
+		"SPLINTERCELL3PS2US",
+		"SPLINTERCELL3PC",
+		"HEROES_5",
+	}
+
+	games := flag.Args()
+
+	if len(games) != 0 {
+		// Overwrite default games list, if
+		// games are provided as arguments
+		config.Games = games
 	}
 
 	return &config, nil
@@ -99,17 +117,17 @@ func main() {
 
 	router := router.Router{
 		Host:   config.Router.Host,
-		Port:   config.Router.Port,
+		Port:   uint16(config.Router.Port),
 		Logger: *common.CreateLogger("Router", common.DEBUG),
 	}
 
 	cdks := cdkey.CDKeyServer{
-		Port:   config.CDKey.Port,
+		Port:   uint16(config.CDKey.Port),
 		Logger: *common.CreateLogger("CDKeyServer", common.DEBUG),
 	}
 
 	nat := gsnat.GSNatServer{
-		Port:   config.NAT.Port,
+		Port:   uint16(config.NAT.Port),
 		Logger: *common.CreateLogger("GSNatServer", common.DEBUG),
 	}
 
