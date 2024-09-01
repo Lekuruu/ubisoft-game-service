@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"sort"
 	"strings"
 	"sync"
 
@@ -88,6 +89,7 @@ func loadConfig() (*Config, error) {
 		config.Games = games
 	}
 
+	sort.Strings(config.Games)
 	return &config, nil
 }
 
@@ -119,6 +121,7 @@ func main() {
 		Host:   config.Router.Host,
 		Port:   uint16(config.Router.Port),
 		Logger: *common.CreateLogger("Router", common.DEBUG),
+		Games:  config.Games,
 	}
 
 	cdks := cdkey.CDKeyServer{

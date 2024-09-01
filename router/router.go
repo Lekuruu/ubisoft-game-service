@@ -11,14 +11,18 @@ import (
 )
 
 type Router struct {
-	Host   string
-	Port   uint16
-	Logger common.Logger
+	Host    string
+	Port    uint16
+	Games   []string
+	Logger  common.Logger
+	Players PlayerCollection
+	Pending map[string]string
 }
 
 type Client struct {
 	Conn              net.Conn
 	Server            *Router
+	Player            *Player
 	GamePublicKey     *rsa.PublicKey
 	GameBlowfishKey   []byte
 	ServerPublicKey   *rsa.PublicKey
@@ -27,6 +31,9 @@ type Client struct {
 }
 
 func (router *Router) Serve() {
+	router.Players = NewPlayerCollection()
+	router.Pending = make(map[string]string)
+
 	listener, err := net.Listen("tcp", fmt.Sprintf("%s:%d", router.Host, router.Port))
 
 	if err != nil {
