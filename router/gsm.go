@@ -3,7 +3,6 @@ package router
 import (
 	"errors"
 	"fmt"
-	"strconv"
 
 	"github.com/lekuruu/ubisoft-game-service/common"
 )
@@ -130,7 +129,10 @@ func NewGSErrorMessage(err int, request *GSMessage) *GSMessage {
 		Priority: request.Priority,
 		Sender:   request.Receiver,
 		Receiver: request.Sender,
-		Data:     []interface{}{common.WriteU8(request.Type), strconv.Itoa(err)},
+		Data: []interface{}{
+			common.WriteU8(request.Type),
+			[]interface{}{common.WriteU8(err)},
+		},
 	}
 }
 
