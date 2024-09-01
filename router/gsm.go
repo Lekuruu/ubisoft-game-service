@@ -121,7 +121,7 @@ func NewGSMessageFromRequest(request *GSMessage) *GSMessage {
 	}
 }
 
-func NewGSErrorMessage(request *GSMessage, err uint8) *GSMessage {
+func NewGSErrorMessage(err uint8, request *GSMessage) *GSMessage {
 	return &GSMessage{
 		Property: request.Property,
 		Priority: request.Priority,
