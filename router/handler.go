@@ -161,6 +161,9 @@ func handleWaitModuleLogin(message *GSMessage, client *Client) (*GSMessage, erro
 		return nil, errors.New("username mismatch")
 	}
 
+	// Remove pending login
+	delete(client.Server.Pending, ipAddress)
+
 	player := &Player{
 		Client: *client,
 		Name:   username,
