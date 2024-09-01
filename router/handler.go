@@ -99,7 +99,8 @@ func handleLogin(message *GSMessage, client *Client) (*GSMessage, error) {
 	}
 
 	if player := client.Server.Players.ByName(username); player != nil {
-		return nil, errors.New("player already connected")
+		// Player already logged in
+		return NewGSErrorMessage(ERRORROUTER_NOTDISCONNECTED, message), nil
 	}
 
 	// TODO: Implement login validation
@@ -145,7 +146,8 @@ func handleWaitModuleLogin(message *GSMessage, client *Client) (*GSMessage, erro
 	}
 
 	if player := client.Server.Players.ByName(username); player != nil {
-		return nil, errors.New("player already connected")
+		// Player already logged in
+		return NewGSErrorMessage(ERRORROUTER_NOTDISCONNECTED, message), nil
 	}
 
 	ipAddress := strings.Split(client.Conn.RemoteAddr().String(), ":")[0]
@@ -183,8 +185,7 @@ func handlePlayerInfo(message *GSMessage, client *Client) (*GSMessage, error) {
 
 	player := client.Server.Players.ByName(targetName)
 	if player == nil {
-		// TODO: Handle this case properly
-		return nil, errors.New("player not found")
+		return NewGSErrorMessage(ERRORROUTER_NOTREGISTERED, message), nil
 	}
 
 	response := NewGSMessageFromRequest(message)
