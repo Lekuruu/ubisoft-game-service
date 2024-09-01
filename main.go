@@ -81,6 +81,7 @@ func loadConfig() (*Config, error) {
 		"HEROES_5",
 	}
 
+	// TODO: Move supported games into database
 	games := flag.Args()
 
 	if len(games) != 0 {
