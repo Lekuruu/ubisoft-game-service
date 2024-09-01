@@ -131,7 +131,7 @@ func NewGSErrorMessage(err int, request *GSMessage) *GSMessage {
 		Receiver: request.Sender,
 		Data: []interface{}{
 			common.WriteU8(request.Type),
-			[]interface{}{common.WriteU8(err)},
+			[]interface{}{common.WriteU32(err)},
 		},
 	}
 }
