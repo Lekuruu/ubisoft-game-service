@@ -1,6 +1,9 @@
 package router
 
-import "strings"
+import (
+	"strconv"
+	"strings"
+)
 
 type Player struct {
 	Client
@@ -17,4 +20,15 @@ type Player struct {
 
 func (player *Player) IpAddress() string {
 	return strings.Split(player.Client.Conn.RemoteAddr().String(), ":")[0]
+}
+
+func (player *Player) Port() int {
+	portString := strings.Split(player.Client.Conn.RemoteAddr().String(), ":")[1]
+	port, err := strconv.Atoi(portString)
+
+	if err != nil {
+		return 0
+	}
+
+	return port
 }
