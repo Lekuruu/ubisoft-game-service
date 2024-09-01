@@ -5,19 +5,30 @@ import (
 	"strings"
 )
 
-type Player struct {
-	Client
-	Id        int
-	Name      string
+type Info struct {
 	Firstname string
 	Surname   string
 	Country   string
 	Email     string
-	Game      string
-	Version   string
+	Gender    uint8
 	Public    bool
-	Status    uint32
-	Mood      uint32
+}
+
+type Friends struct {
+	Status  uint32
+	Mood    uint32
+	Ignored PlayerCollection
+	List    PlayerCollection
+}
+
+type Player struct {
+	Id      int
+	Name    string
+	Game    string
+	Version string
+	Info    Info
+	Friends Friends
+	Client
 }
 
 func (player *Player) IpAddress() string {

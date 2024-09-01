@@ -118,13 +118,9 @@ func handleLogin(message *GSMessage, client *Client) (*GSMessage, error) {
 
 	// Create initial player object
 	player := &Player{
-		Name:      username,
-		Version:   version,
-		Public:    public,
-		Firstname: "", // TODO
-		Surname:   "", // TODO
-		Country:   "", // TODO
-		Email:     "", // TODO
+		Name:    username,
+		Version: version,
+		Info:    Info{Public: public},
 	}
 
 	// Add player to pending waitmodule logins
@@ -206,13 +202,13 @@ func handlePlayerInfo(message *GSMessage, client *Client) (*GSMessage, error) {
 		return NewGSErrorMessage(ERRORROUTER_NOTREGISTERED, message), nil
 	}
 
-	if !player.Public && player != client.Player {
+	if !player.Info.Public && player != client.Player {
 		return NewGSErrorMessage(ERRORROUTER_NOTREGISTERED, message), nil
 	}
 
 	playerData := []interface{}{
-		player.Name, player.Surname, player.Firstname,
-		player.Country, player.Email, "IRCID", player.IpAddress(),
+		player.Name, player.Info.Surname, player.Info.Firstname,
+		player.Info.Country, player.Info.Email, "IRCID", player.IpAddress(),
 	}
 
 	response := NewGSMessageFromRequest(message)
@@ -279,8 +275,12 @@ func handleFriendsLogin(message *GSMessage, client *Client) (*GSMessage, error) 
 		return nil, err
 	}
 
-	client.Player.Status = status
-	client.Player.Mood = mood
+	client.Player.Friends.Status = status
+	client.Player.Friends.Mood = mood
+
+	// TODO: Load relationships from database
+	client.Player.Friends.List = NewPlayerCollection()
+	client.Player.Friends.Ignored = NewPlayerCollection()
 
 	response := NewGSMessageFromRequest(message)
 	response.Type = GSM_GSSUCCESS
