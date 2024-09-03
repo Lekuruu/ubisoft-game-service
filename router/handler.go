@@ -118,11 +118,6 @@ func handleLogin(message *GSMessage, client *Client) (*GSMessage, GSError) {
 		}
 	}
 
-	return nil, &RouterError{
-		Message:      "player already logged in",
-		ResponseCode: ERRORROUTER_NOTDISCONNECTED,
-	}
-
 	// Create initial player object
 	player := &Player{
 		Name:    username,
