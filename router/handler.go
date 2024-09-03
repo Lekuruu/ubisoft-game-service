@@ -233,7 +233,13 @@ func handleLobbyMessage(message *GSMessage, client *Client) (*GSMessage, error) 
 		return nil, fmt.Errorf("lobby handler for '%s' not found", subTypeString)
 	}
 
-	return handler(message, client)
+	response, err := handler(message, client)
+	if err != nil {
+		client.Server.Logger.Error(fmt.Sprintf("Failed to handle lobby message: %s", err))
+		return newLobbyError(ERRORLOBBYSRV_UNKNOWNERROR, subType), nil
+	}
+
+	return response, nil
 }
 
 func newLobbyError(err int, subType int) *GSMessage {
