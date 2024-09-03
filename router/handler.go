@@ -3,7 +3,6 @@ package router
 import (
 	"crypto/rand"
 	"crypto/rsa"
-	"errors"
 	"fmt"
 	"sort"
 	"strconv"
@@ -14,22 +13,22 @@ import (
 )
 
 // A map to store the handlers for each message type
-var RouterHandlers = map[uint8]func(*GSMessage, *Client) (*GSMessage, error){}
-var LobbyHandlers = map[int]func(*GSMessage, *Client) (*GSMessage, error){}
+var RouterHandlers = map[uint8]func(*GSMessage, *Client) (*GSMessage, GSError){}
+var LobbyHandlers = map[int]func(*GSMessage, *Client) (*GSMessage, GSError){}
 
-func stillAlive(message *GSMessage, _ *Client) (*GSMessage, error) {
+func stillAlive(message *GSMessage, _ *Client) (*GSMessage, GSError) {
 	return NewGSMessageFromRequest(message), nil
 }
 
-func handleKeyExchange(message *GSMessage, client *Client) (*GSMessage, error) {
+func handleKeyExchange(message *GSMessage, client *Client) (*GSMessage, GSError) {
 	requestId, err := common.GetStringListItem(message.Data, 0)
 	if err != nil {
-		return nil, err
+		return nil, &RouterError{Message: err.Error()}
 	}
 
 	requestArgs, err := common.GetListItem(message.Data, 1)
 	if err != nil {
-		return nil, err
+		return nil, &RouterError{Message: err.Error()}
 	}
 
 	response := NewGSMessageFromRequest(message)
@@ -41,13 +40,13 @@ func handleKeyExchange(message *GSMessage, client *Client) (*GSMessage, error) {
 		// RSA Encryption
 		rsaBuffer, err := common.GetBinaryListItem(requestArgs, 2)
 		if err != nil {
-			return nil, err
+			return nil, &RouterError{Message: err.Error()}
 		}
 
 		client.GamePublicKey = common.RsaPublicKeyFromBuffer(rsaBuffer)
 		privateKey, err := common.RsaKeygen()
 		if err != nil {
-			return nil, err
+			return nil, &RouterError{Message: err.Error()}
 		}
 
 		client.ServerPrivateKey = privateKey
@@ -60,17 +59,17 @@ func handleKeyExchange(message *GSMessage, client *Client) (*GSMessage, error) {
 	case "2":
 		// Blowfish encryption
 		if client.GamePublicKey == nil {
-			return nil, errors.New("game public key not initialized")
+			return nil, &RouterError{Message: "game public key not initialized"}
 		}
 
 		encryptedBlowfishKey, err := common.GetBinaryListItem(requestArgs, 2)
 		if err != nil {
-			return nil, err
+			return nil, &RouterError{Message: err.Error()}
 		}
 
 		blowfishKey, err := client.ServerPrivateKey.Decrypt(rand.Reader, encryptedBlowfishKey, nil)
 		if err != nil {
-			return nil, err
+			return nil, &RouterError{Message: err.Error()}
 		}
 
 		client.GameBlowfishKey = blowfishKey
@@ -78,34 +77,34 @@ func handleKeyExchange(message *GSMessage, client *Client) (*GSMessage, error) {
 
 		encryptedKey, err := rsa.EncryptPKCS1v15(rand.Reader, client.GamePublicKey, client.ServerBlowfishKey)
 		if err != nil {
-			return nil, err
+			return nil, &RouterError{Message: err.Error()}
 		}
 
 		responseArgs = append(responseArgs, fmt.Sprint(len(encryptedKey)))
 		responseArgs = append(responseArgs, encryptedKey)
 
 	default:
-		return nil, errors.New("invalid request id")
+		return nil, &RouterError{Message: "invalid request id"}
 	}
 
 	response.Data = append(response.Data, responseArgs)
 	return response, nil
 }
 
-func handleLogin(message *GSMessage, client *Client) (*GSMessage, error) {
+func handleLogin(message *GSMessage, client *Client) (*GSMessage, GSError) {
 	username, err := common.GetStringListItem(message.Data, 0)
 	if err != nil {
-		return nil, err
+		return nil, &RouterError{Message: err.Error()}
 	}
 
 	version, err := common.GetStringListItem(message.Data, 2)
 	if err != nil {
-		return nil, err
+		return nil, &RouterError{Message: err.Error()}
 	}
 
 	public, err := common.GetBoolListItem(message.Data, 3)
 	if err != nil {
-		return nil, err
+		return nil, &RouterError{Message: err.Error()}
 	}
 
 	// TODO: Implement login validation
@@ -113,7 +112,15 @@ func handleLogin(message *GSMessage, client *Client) (*GSMessage, error) {
 
 	if player := client.Server.Players.ByName(username); player != nil {
 		// Player already logged in
-		return NewGSErrorMessage(ERRORROUTER_NOTDISCONNECTED, message), nil
+		return nil, &RouterError{
+			Message:      "player already logged in",
+			ResponseCode: ERRORROUTER_NOTDISCONNECTED,
+		}
+	}
+
+	return nil, &RouterError{
+		Message:      "player already logged in",
+		ResponseCode: ERRORROUTER_NOTDISCONNECTED,
 	}
 
 	// Create initial player object
@@ -139,7 +146,7 @@ func handleLogin(message *GSMessage, client *Client) (*GSMessage, error) {
 	return response, nil
 }
 
-func handleWaitModuleJoin(message *GSMessage, client *Client) (*GSMessage, error) {
+func handleWaitModuleJoin(message *GSMessage, client *Client) (*GSMessage, GSError) {
 	// NOTE: The WaitModule server is not implemented in this project yet, so
 	//		 that's why we are sending the router's host and port as the
 	//		 WaitModule connection info.
@@ -155,26 +162,29 @@ func handleWaitModuleJoin(message *GSMessage, client *Client) (*GSMessage, error
 	return response, nil
 }
 
-func handleWaitModuleLogin(message *GSMessage, client *Client) (*GSMessage, error) {
+func handleWaitModuleLogin(message *GSMessage, client *Client) (*GSMessage, GSError) {
 	username, err := common.GetStringListItem(message.Data, 0)
 	if err != nil {
-		return nil, err
+		return nil, &RouterError{Message: err.Error()}
 	}
 
 	if player := client.Server.Players.ByName(username); player != nil {
 		// Player already logged in
-		return NewGSErrorMessage(ERRORROUTER_NOTDISCONNECTED, message), nil
+		return nil, &RouterError{
+			Message:      "player already logged in",
+			ResponseCode: ERRORROUTER_NOTDISCONNECTED,
+		}
 	}
 
 	ipAddress := strings.Split(client.Conn.RemoteAddr().String(), ":")[0]
 	player, ok := client.Server.Pending[ipAddress]
 
 	if !ok {
-		return nil, errors.New("ip not found in pending login list")
+		return nil, &LobbyError{ErrorMessage: "ip not found in pending login list"}
 	}
 
 	if player.Name != username {
-		return nil, errors.New("username mismatch")
+		return nil, &LobbyError{ErrorMessage: "username mismatch"}
 	}
 
 	// Remove pending login
@@ -191,19 +201,25 @@ func handleWaitModuleLogin(message *GSMessage, client *Client) (*GSMessage, erro
 	return response, nil
 }
 
-func handlePlayerInfo(message *GSMessage, client *Client) (*GSMessage, error) {
+func handlePlayerInfo(message *GSMessage, client *Client) (*GSMessage, GSError) {
 	targetName, err := common.GetStringListItem(message.Data, 0)
 	if err != nil {
-		return nil, err
+		return nil, &RouterError{Message: err.Error()}
 	}
 
 	player := client.Server.Players.ByName(targetName)
 	if player == nil {
-		return NewGSErrorMessage(ERRORROUTER_NOTREGISTERED, message), nil
+		return nil, &RouterError{
+			ResponseCode: ERRORROUTER_NOTREGISTERED,
+			Message:      "player was not found",
+		}
 	}
 
 	if !player.Info.Public && player != client.Player {
-		return NewGSErrorMessage(ERRORROUTER_NOTREGISTERED, message), nil
+		return nil, &RouterError{
+			ResponseCode: ERRORROUTER_NOTREGISTERED,
+			Message:      "player info is not public",
+		}
 	}
 
 	playerData := []interface{}{
@@ -217,61 +233,41 @@ func handlePlayerInfo(message *GSMessage, client *Client) (*GSMessage, error) {
 	return response, nil
 }
 
-func handleLobbyMessage(message *GSMessage, client *Client) (*GSMessage, error) {
+func handleLobbyMessage(message *GSMessage, client *Client) (*GSMessage, GSError) {
 	subTypeString, err := common.GetStringListItem(message.Data, 0)
 	if err != nil {
-		return nil, err
+		return nil, &LobbyError{ErrorMessage: err.Error()}
 	}
 
 	subType, err := strconv.Atoi(subTypeString)
 	if err != nil {
-		return nil, err
+		return nil, &LobbyError{ErrorMessage: err.Error()}
 	}
 
 	handler, ok := LobbyHandlers[subType]
 	if !ok {
-		return nil, fmt.Errorf("lobby handler for '%s' not found", subTypeString)
+		return nil, &LobbyError{ErrorMessage: fmt.Sprintf("lobby handler for '%s' not found", subTypeString)}
 	}
 
-	response, err := handler(message, client)
-	if err != nil {
-		client.Server.Logger.Error(fmt.Sprintf("Failed to handle lobby message: %s", err))
-		return newLobbyError(ERRORLOBBYSRV_UNKNOWNERROR, subType), nil
-	}
-
-	return response, nil
+	return handler(message, client)
 }
 
-func newLobbyError(err int, subType int) *GSMessage {
-	return &GSMessage{
-		Property: PROPERTY_GS,
-		Type:     GSM_LOBBY_MSG,
-		Data: []interface{}{
-			strconv.Itoa(GSM_GSFAIL),
-			[]interface{}{
-				strconv.Itoa(subType),
-				[]interface{}{strconv.Itoa(err)},
-			},
-		},
-	}
-}
-
-func handleLobbyLogin(message *GSMessage, client *Client) (*GSMessage, error) {
+func handleLobbyLogin(message *GSMessage, client *Client) (*GSMessage, GSError) {
 	requestArgs, err := common.GetListItem(message.Data, 1)
 	if err != nil {
-		return nil, err
+		return nil, &LobbyError{ErrorMessage: err.Error()}
 	}
 
 	gameName, err := common.GetStringListItem(requestArgs, 0)
 	if err != nil {
-		return nil, err
+		return nil, &LobbyError{ErrorMessage: err.Error()}
 	}
 
 	i := sort.SearchStrings(client.Server.Games, gameName)
 
 	// Check if game is supported
 	if i >= len(client.Server.Games) || client.Server.Games[i] != gameName {
-		return nil, errors.New("game not supported")
+		return nil, &LobbyError{ErrorMessage: "game not supported"}
 	}
 
 	client.Player.Game = gameName
@@ -284,15 +280,15 @@ func handleLobbyLogin(message *GSMessage, client *Client) (*GSMessage, error) {
 	return response, nil
 }
 
-func handleFriendsLogin(message *GSMessage, client *Client) (*GSMessage, error) {
+func handleFriendsLogin(message *GSMessage, client *Client) (*GSMessage, GSError) {
 	status, err := common.GetU32ListItem(message.Data, 0)
 	if err != nil {
-		return nil, err
+		return nil, &RouterError{Message: err.Error()}
 	}
 
 	mood, err := common.GetU32ListItem(message.Data, 1)
 	if err != nil {
-		return nil, err
+		return nil, &RouterError{Message: err.Error()}
 	}
 
 	client.Player.Friends.Status = status
@@ -308,8 +304,8 @@ func handleFriendsLogin(message *GSMessage, client *Client) (*GSMessage, error) 
 	return response, nil
 }
 
-func handleMotdRequest(message *GSMessage, client *Client) (*GSMessage, error) {
-	// language := common.GetStringListItem(message.Data, 0)
+func handleMotdRequest(message *GSMessage, client *Client) (*GSMessage, GSError) {
+	// language, err := common.GetStringListItem(message.Data, 0)
 	response := NewGSMessageFromRequest(message)
 	response.Type = GSM_GSSUCCESS
 	response.Data = []interface{}{

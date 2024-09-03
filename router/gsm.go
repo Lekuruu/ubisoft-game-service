@@ -121,21 +121,6 @@ func NewGSMessageFromRequest(request *GSMessage) *GSMessage {
 	}
 }
 
-func NewGSErrorMessage(err int, request *GSMessage) *GSMessage {
-	// TODO: Response data seems to be wrong...
-	return &GSMessage{
-		Type:     GSM_GSFAIL,
-		Property: request.Property,
-		Priority: request.Priority,
-		Sender:   request.Receiver,
-		Receiver: request.Sender,
-		Data: []interface{}{
-			common.WriteU8(request.Type),
-			[]interface{}{common.WriteU32(err)},
-		},
-	}
-}
-
 // Encrypt serialized data list
 func EncryptDataList(data []byte, property uint8, client *Client) ([]byte, error) {
 	switch property {

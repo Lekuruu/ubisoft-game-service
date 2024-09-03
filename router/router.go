@@ -86,11 +86,11 @@ func (router *Router) HandleClient(conn net.Conn) {
 			continue
 		}
 
-		response, err := handler(msg, client)
+		response, gsError := handler(msg, client)
 
-		if err != nil {
-			router.Logger.Error(fmt.Sprintf("Failed to handle message: %s", err))
-			response = NewGSErrorMessage(ERRORROUTER_UNKNOWNERROR, msg)
+		if gsError != nil {
+			router.Logger.Error(gsError.Error())
+			response = gsError.Response(msg)
 		}
 
 		serialized, err := response.Serialize(client)
