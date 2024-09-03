@@ -241,7 +241,8 @@ func handleLobbyMessage(message *GSMessage, client *Client) (*GSMessage, GSError
 
 	handler, ok := LobbyHandlers[subType]
 	if !ok {
-		return nil, &LobbyError{Message: fmt.Sprintf("lobby handler for '%s' not found", subTypeString)}
+		client.Server.Logger.Warning(fmt.Sprintf("Couldn't find lobby handler for type '%d'", subType))
+		return nil, nil
 	}
 
 	return handler(message, client)
