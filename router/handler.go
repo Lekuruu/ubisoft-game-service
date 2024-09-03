@@ -175,11 +175,11 @@ func handleWaitModuleLogin(message *GSMessage, client *Client) (*GSMessage, GSEr
 	player, ok := client.Server.Pending[ipAddress]
 
 	if !ok {
-		return nil, &LobbyError{ErrorMessage: "ip not found in pending login list"}
+		return nil, &LobbyError{Message: "ip not found in pending login list"}
 	}
 
 	if player.Name != username {
-		return nil, &LobbyError{ErrorMessage: "username mismatch"}
+		return nil, &LobbyError{Message: "username mismatch"}
 	}
 
 	// Remove pending login
@@ -231,17 +231,17 @@ func handlePlayerInfo(message *GSMessage, client *Client) (*GSMessage, GSError) 
 func handleLobbyMessage(message *GSMessage, client *Client) (*GSMessage, GSError) {
 	subTypeString, err := common.GetStringListItem(message.Data, 0)
 	if err != nil {
-		return nil, &LobbyError{ErrorMessage: err.Error()}
+		return nil, &LobbyError{Message: err.Error()}
 	}
 
 	subType, err := strconv.Atoi(subTypeString)
 	if err != nil {
-		return nil, &LobbyError{ErrorMessage: err.Error()}
+		return nil, &LobbyError{Message: err.Error()}
 	}
 
 	handler, ok := LobbyHandlers[subType]
 	if !ok {
-		return nil, &LobbyError{ErrorMessage: fmt.Sprintf("lobby handler for '%s' not found", subTypeString)}
+		return nil, &LobbyError{Message: fmt.Sprintf("lobby handler for '%s' not found", subTypeString)}
 	}
 
 	return handler(message, client)
@@ -250,19 +250,19 @@ func handleLobbyMessage(message *GSMessage, client *Client) (*GSMessage, GSError
 func handleLobbyLogin(message *GSMessage, client *Client) (*GSMessage, GSError) {
 	requestArgs, err := common.GetListItem(message.Data, 1)
 	if err != nil {
-		return nil, &LobbyError{ErrorMessage: err.Error()}
+		return nil, &LobbyError{Message: err.Error()}
 	}
 
 	gameName, err := common.GetStringListItem(requestArgs, 0)
 	if err != nil {
-		return nil, &LobbyError{ErrorMessage: err.Error()}
+		return nil, &LobbyError{Message: err.Error()}
 	}
 
 	i := sort.SearchStrings(client.Server.Games, gameName)
 
 	// Check if game is supported
 	if i >= len(client.Server.Games) || client.Server.Games[i] != gameName {
-		return nil, &LobbyError{ErrorMessage: "game not supported"}
+		return nil, &LobbyError{Message: "game not supported"}
 	}
 
 	client.Player.Game = gameName

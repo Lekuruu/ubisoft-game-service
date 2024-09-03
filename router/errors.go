@@ -43,16 +43,16 @@ func (e *RouterError) Response(request *GSMessage) *GSMessage {
 }
 
 type LobbyError struct {
-	ErrorMessage string
-	ErrorCode    int
+	Message      string
+	ResponseCode int
 }
 
 func (e *LobbyError) Error() string {
-	return fmt.Sprintf("LobbyError: '%s' (%d)", e.ErrorMessage, e.ErrorCode)
+	return fmt.Sprintf("LobbyError: '%s' (%d)", e.Message, e.ResponseCode)
 }
 
 func (e *LobbyError) Code() int {
-	return e.ErrorCode
+	return e.ResponseCode
 }
 
 func (e *LobbyError) Response(request *GSMessage) *GSMessage {
