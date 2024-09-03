@@ -16,16 +16,16 @@ type GSError interface {
 }
 
 type RouterError struct {
-	ErrorMessage string
-	ErrorCode    int
+	Message      string
+	ResponseCode int
 }
 
 func (e *RouterError) Error() string {
-	return fmt.Sprintf("RouterError: '%s' (%d)", e.ErrorMessage, e.ErrorCode)
+	return fmt.Sprintf("RouterError: '%s' (%d)", e.Message, e.ResponseCode)
 }
 
 func (e *RouterError) Code() int {
-	return e.ErrorCode
+	return e.ResponseCode
 }
 
 func (e *RouterError) Response(request *GSMessage) *GSMessage {
