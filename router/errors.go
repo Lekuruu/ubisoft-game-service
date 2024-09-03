@@ -1,5 +1,77 @@
 package router
 
+import (
+	"fmt"
+	"strconv"
+
+	"github.com/lekuruu/ubisoft-game-service/common"
+)
+
+// Extension of the "error" interface, that contains an internal message
+// and a response error code, that will be sent to the client
+type GSError interface {
+	Code() int
+	Error() string
+	Response(request *GSMessage) *GSMessage
+}
+
+type RouterError struct {
+	ErrorMessage string
+	ErrorCode    int
+}
+
+func (e *RouterError) Error() string {
+	return fmt.Sprintf("RouterError: '%s' (%d)", e.ErrorMessage, e.ErrorCode)
+}
+
+func (e *RouterError) Code() int {
+	return e.ErrorCode
+}
+
+func (e *RouterError) Response(request *GSMessage) *GSMessage {
+	return &GSMessage{
+		Type:     GSM_GSFAIL,
+		Property: request.Property,
+		Priority: request.Priority,
+		Sender:   request.Receiver,
+		Receiver: request.Sender,
+		Data: []interface{}{
+			common.WriteU8(request.Type),
+			[]interface{}{common.WriteU32(e.Code())},
+		},
+	}
+}
+
+type LobbyError struct {
+	ErrorMessage string
+	ErrorCode    int
+}
+
+func (e *LobbyError) Error() string {
+	return fmt.Sprintf("LobbyError: '%s' (%d)", e.ErrorMessage, e.ErrorCode)
+}
+
+func (e *LobbyError) Code() int {
+	return e.ErrorCode
+}
+
+func (e *LobbyError) Response(request *GSMessage) *GSMessage {
+	subTypeString, _ := common.GetStringListItem(request.Data, 0)
+	subType, _ := strconv.Atoi(subTypeString)
+
+	return &GSMessage{
+		Property: PROPERTY_GS,
+		Type:     GSM_LOBBY_MSG,
+		Data: []interface{}{
+			strconv.Itoa(GSM_GSFAIL),
+			[]interface{}{
+				strconv.Itoa(subType),
+				[]interface{}{strconv.Itoa(e.Code())},
+			},
+		},
+	}
+}
+
 // Errors returned by the login service
 const (
 	ERRORROUTER_UNKNOWNERROR            = 0
