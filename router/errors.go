@@ -60,8 +60,11 @@ func (e *LobbyError) Response(request *GSMessage) *GSMessage {
 	subType, _ := strconv.Atoi(subTypeString)
 
 	return &GSMessage{
-		Property: PROPERTY_GS,
 		Type:     GSM_LOBBY_MSG,
+		Property: request.Property,
+		Priority: request.Priority,
+		Sender:   request.Receiver,
+		Receiver: request.Sender,
 		Data: []interface{}{
 			strconv.Itoa(GSM_GSFAIL),
 			[]interface{}{
