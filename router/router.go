@@ -93,6 +93,11 @@ func (router *Router) HandleClient(conn net.Conn) {
 			response = gsError.Response(msg)
 		}
 
+		if response == nil {
+			// No response & no error
+			continue
+		}
+
 		serialized, err := response.Serialize(client)
 
 		if err != nil {
