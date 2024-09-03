@@ -218,22 +218,36 @@ func handlePlayerInfo(message *GSMessage, client *Client) (*GSMessage, error) {
 }
 
 func handleLobbyMessage(message *GSMessage, client *Client) (*GSMessage, error) {
-	lobbyMessageTypeString, err := common.GetStringListItem(message.Data, 0)
+	subTypeString, err := common.GetStringListItem(message.Data, 0)
 	if err != nil {
 		return nil, err
 	}
 
-	lobbyMessageType, err := strconv.Atoi(lobbyMessageTypeString)
+	subType, err := strconv.Atoi(subTypeString)
 	if err != nil {
 		return nil, err
 	}
 
-	handler, ok := LobbyHandlers[lobbyMessageType]
+	handler, ok := LobbyHandlers[subType]
 	if !ok {
-		return nil, fmt.Errorf("lobby handler for '%s' not found", lobbyMessageTypeString)
+		return nil, fmt.Errorf("lobby handler for '%s' not found", subTypeString)
 	}
 
 	return handler(message, client)
+}
+
+func newLobbyError(err int, subType int) *GSMessage {
+	return &GSMessage{
+		Property: PROPERTY_GS,
+		Type:     GSM_LOBBY_MSG,
+		Data: []interface{}{
+			strconv.Itoa(GSM_GSFAIL),
+			[]interface{}{
+				strconv.Itoa(subType),
+				[]interface{}{strconv.Itoa(err)},
+			},
+		},
+	}
 }
 
 func handleLobbyLogin(message *GSMessage, client *Client) (*GSMessage, error) {
