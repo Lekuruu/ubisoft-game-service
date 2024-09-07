@@ -43,14 +43,14 @@ func handleKeyExchange(message *GSMessage, client *Client) (*GSMessage, GSError)
 			return nil, &RouterError{Message: err.Error()}
 		}
 
-		client.GamePublicKey = common.RsaPublicKeyFromBuffer(rsaBuffer)
+		client.State.GamePublicKey = common.RsaPublicKeyFromBuffer(rsaBuffer)
 		privateKey, err := common.RsaKeygen()
 		if err != nil {
 			return nil, &RouterError{Message: err.Error()}
 		}
 
-		client.ServerPrivateKey = privateKey
-		client.ServerPublicKey = &privateKey.PublicKey
+		client.State.ServerPrivateKey = privateKey
+		client.State.ServerPublicKey = &privateKey.PublicKey
 
 		keyData := common.RsaPublicKeyToBuffer(&privateKey.PublicKey)
 		responseArgs = append(responseArgs, fmt.Sprint(len(keyData)))
@@ -58,7 +58,7 @@ func handleKeyExchange(message *GSMessage, client *Client) (*GSMessage, GSError)
 
 	case "2":
 		// Blowfish encryption
-		if client.GamePublicKey == nil {
+		if client.State.GamePublicKey == nil {
 			return nil, &RouterError{Message: "game public key not initialized"}
 		}
 
@@ -67,15 +67,25 @@ func handleKeyExchange(message *GSMessage, client *Client) (*GSMessage, GSError)
 			return nil, &RouterError{Message: err.Error()}
 		}
 
-		blowfishKey, err := client.ServerPrivateKey.Decrypt(rand.Reader, encryptedBlowfishKey, nil)
+		blowfishKey, err := client.State.ServerPrivateKey.Decrypt(
+			rand.Reader,
+			encryptedBlowfishKey,
+			nil,
+		)
+
 		if err != nil {
 			return nil, &RouterError{Message: err.Error()}
 		}
 
-		client.GameBlowfishKey = blowfishKey
-		client.ServerBlowfishKey = common.BlowfishKeygen(16)
+		client.State.GameBlowfishKey = blowfishKey
+		client.State.ServerBlowfishKey = common.BlowfishKeygen(16)
 
-		encryptedKey, err := rsa.EncryptPKCS1v15(rand.Reader, client.GamePublicKey, client.ServerBlowfishKey)
+		encryptedKey, err := rsa.EncryptPKCS1v15(
+			rand.Reader,
+			client.State.GamePublicKey,
+			client.State.ServerBlowfishKey,
+		)
+
 		if err != nil {
 			return nil, &RouterError{Message: err.Error()}
 		}

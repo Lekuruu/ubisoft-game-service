@@ -1,7 +1,6 @@
 package router
 
 import (
-	"crypto/rsa"
 	"fmt"
 	"io"
 	"log"
@@ -20,14 +19,10 @@ type Router struct {
 }
 
 type Client struct {
-	Conn              net.Conn
-	Server            *Router
-	Player            *Player
-	GamePublicKey     *rsa.PublicKey
-	GameBlowfishKey   []byte
-	ServerPublicKey   *rsa.PublicKey
-	ServerPrivateKey  *rsa.PrivateKey
-	ServerBlowfishKey []byte
+	Conn   net.Conn
+	Server *Router
+	Player *Player
+	State  *GSClientState
 }
 
 func (router *Router) Serve() {
@@ -61,12 +56,13 @@ func (router *Router) HandleClient(conn net.Conn) {
 	client := &Client{
 		Conn:   conn,
 		Server: router,
+		State:  &GSClientState{},
 	}
 
 	defer router.OnDisconnect(client)
 
 	for {
-		msg, err := ReadGSMessage(client)
+		msg, err := ReadGSMessage(client.Conn, client.State)
 
 		if err == io.EOF {
 			// Client disconnected

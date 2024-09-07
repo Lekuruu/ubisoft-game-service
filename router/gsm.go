@@ -1,8 +1,10 @@
 package router
 
 import (
+	"crypto/rsa"
 	"errors"
 	"fmt"
+	"io"
 
 	"github.com/lekuruu/ubisoft-game-service/common"
 )
@@ -18,6 +20,14 @@ type GSMessage struct {
 	Sender   uint8
 	Receiver uint8
 	Data     []interface{}
+}
+
+type GSClientState struct {
+	GamePublicKey     *rsa.PublicKey
+	GameBlowfishKey   []byte
+	ServerPublicKey   *rsa.PublicKey
+	ServerPrivateKey  *rsa.PrivateKey
+	ServerBlowfishKey []byte
 }
 
 // Serialize a GSMessage to be sent to the client
@@ -58,9 +68,9 @@ func (msg *GSMessage) String() string {
 }
 
 // Read a GSMessage from the client
-func ReadGSMessage(client *Client) (*GSMessage, error) {
+func ReadGSMessage(reader io.Reader, state *GSClientState) (*GSMessage, error) {
 	header := make([]byte, GSMSG_HEADER_SIZE)
-	_, err := client.Conn.Read(header)
+	_, err := reader.Read(header)
 
 	if err != nil {
 		return nil, err
@@ -82,7 +92,7 @@ func ReadGSMessage(client *Client) (*GSMessage, error) {
 	}
 
 	data := make([]byte, size-GSMSG_HEADER_SIZE)
-	_, err = client.Conn.Read(data)
+	_, err = reader.Read(data)
 
 	if err != nil {
 		return nil, err
@@ -91,7 +101,7 @@ func ReadGSMessage(client *Client) (*GSMessage, error) {
 	dataList, err := DecryptDataList(
 		data,
 		property,
-		client,
+		state,
 	)
 
 	if err != nil {
@@ -128,7 +138,7 @@ func EncryptDataList(data []byte, property uint8, client *Client) ([]byte, error
 		return common.GSXOREncrypt(data), nil
 
 	case PROPERTY_GS_ENCRYPT:
-		cipher := common.NewBlowfishCipher(client.GameBlowfishKey)
+		cipher := common.NewBlowfishCipher(client.State.GameBlowfishKey)
 		return cipher.Encrypt(data)
 
 	default:
@@ -137,13 +147,13 @@ func EncryptDataList(data []byte, property uint8, client *Client) ([]byte, error
 }
 
 // Decrypt & deserialize data list
-func DecryptDataList(data []byte, property uint8, client *Client) ([]interface{}, error) {
+func DecryptDataList(data []byte, property uint8, state *GSClientState) ([]interface{}, error) {
 	switch property {
 	case PROPERTY_GS_ENCRYPT:
-		if client.GameBlowfishKey == nil {
+		if state.GameBlowfishKey == nil {
 			return nil, errors.New("blowfish key not initialized")
 		}
-		cipher := common.NewBlowfishCipher(client.GameBlowfishKey)
+		cipher := common.NewBlowfishCipher(state.GameBlowfishKey)
 		decrypted, err := cipher.Decrypt(data)
 		if err != nil {
 			return nil, err
