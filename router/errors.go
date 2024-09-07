@@ -12,7 +12,7 @@ import (
 type GSError interface {
 	Code() int
 	Error() string
-	Response(request *GSMessage) *GSMessage
+	Response(request *common.GSMessage) *common.GSMessage
 }
 
 type RouterError struct {
@@ -28,8 +28,8 @@ func (e *RouterError) Code() int {
 	return e.ResponseCode
 }
 
-func (e *RouterError) Response(request *GSMessage) *GSMessage {
-	return &GSMessage{
+func (e *RouterError) Response(request *common.GSMessage) *common.GSMessage {
+	return &common.GSMessage{
 		Type:     GSM_GSFAIL,
 		Property: request.Property,
 		Priority: request.Priority,
@@ -55,11 +55,11 @@ func (e *LobbyError) Code() int {
 	return e.ResponseCode
 }
 
-func (e *LobbyError) Response(request *GSMessage) *GSMessage {
+func (e *LobbyError) Response(request *common.GSMessage) *common.GSMessage {
 	subTypeString, _ := common.GetStringListItem(request.Data, 0)
 	subType, _ := strconv.Atoi(subTypeString)
 
-	return &GSMessage{
+	return &common.GSMessage{
 		Type:     GSM_LOBBY_MSG,
 		Property: request.Property,
 		Priority: request.Priority,

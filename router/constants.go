@@ -196,12 +196,6 @@ const (
 )
 
 const (
-	PROPERTY_GS         = 0
-	PROPERTY_GAME       = 1
-	PROPERTY_GS_ENCRYPT = 2
-)
-
-const (
 	STATUS_PLAYERONLINE          = 0
 	STATUS_PLAYEROFFLINE         = 1
 	STATUS_PLAYERAWAY            = 2

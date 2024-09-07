@@ -13,14 +13,14 @@ import (
 )
 
 // A map to store the handlers for each message type
-var RouterHandlers = map[uint8]func(*GSMessage, *Client) (*GSMessage, GSError){}
-var LobbyHandlers = map[int]func(*GSMessage, *Client) (*GSMessage, GSError){}
+var RouterHandlers = map[uint8]func(*common.GSMessage, *Client) (*common.GSMessage, GSError){}
+var LobbyHandlers = map[int]func(*common.GSMessage, *Client) (*common.GSMessage, GSError){}
 
-func stillAlive(message *GSMessage, _ *Client) (*GSMessage, GSError) {
-	return NewGSMessageFromRequest(message), nil
+func stillAlive(message *common.GSMessage, _ *Client) (*common.GSMessage, GSError) {
+	return common.NewGSMessageFromRequest(message), nil
 }
 
-func handleKeyExchange(message *GSMessage, client *Client) (*GSMessage, GSError) {
+func handleKeyExchange(message *common.GSMessage, client *Client) (*common.GSMessage, GSError) {
 	requestId, err := common.GetStringListItem(message.Data, 0)
 	if err != nil {
 		return nil, &RouterError{Message: err.Error()}
@@ -31,7 +31,7 @@ func handleKeyExchange(message *GSMessage, client *Client) (*GSMessage, GSError)
 		return nil, &RouterError{Message: err.Error()}
 	}
 
-	response := NewGSMessageFromRequest(message)
+	response := common.NewGSMessageFromRequest(message)
 	response.Data = []interface{}{requestId}
 	responseArgs := []interface{}{"1"}
 
@@ -101,7 +101,7 @@ func handleKeyExchange(message *GSMessage, client *Client) (*GSMessage, GSError)
 	return response, nil
 }
 
-func handleLogin(message *GSMessage, client *Client) (*GSMessage, GSError) {
+func handleLogin(message *common.GSMessage, client *Client) (*common.GSMessage, GSError) {
 	username, err := common.GetStringListItem(message.Data, 0)
 	if err != nil {
 		return nil, &RouterError{Message: err.Error()}
@@ -144,18 +144,18 @@ func handleLogin(message *GSMessage, client *Client) (*GSMessage, GSError) {
 		delete(client.Server.Pending, ipAddress)
 	})
 
-	response := NewGSMessageFromRequest(message)
-	response.Property = PROPERTY_GS
+	response := common.NewGSMessageFromRequest(message)
+	response.Property = common.GSM_PROPERTY_GS
 	response.Type = GSM_GSSUCCESS
 	response.Data = []interface{}{common.WriteU8(GSM_LOGIN)}
 	return response, nil
 }
 
-func handleWaitModuleJoin(message *GSMessage, client *Client) (*GSMessage, GSError) {
+func handleWaitModuleJoin(message *common.GSMessage, client *Client) (*common.GSMessage, GSError) {
 	// NOTE: The WaitModule server is not implemented in this project yet, so
 	//		 that's why we are sending the router's host and port as the
 	//		 WaitModule connection info.
-	response := NewGSMessageFromRequest(message)
+	response := common.NewGSMessageFromRequest(message)
 	response.Type = GSM_GSSUCCESS
 	response.Data = []interface{}{common.WriteU8(GSM_JOINWAITMODULE)}
 
@@ -167,7 +167,7 @@ func handleWaitModuleJoin(message *GSMessage, client *Client) (*GSMessage, GSErr
 	return response, nil
 }
 
-func handleWaitModuleLogin(message *GSMessage, client *Client) (*GSMessage, GSError) {
+func handleWaitModuleLogin(message *common.GSMessage, client *Client) (*common.GSMessage, GSError) {
 	username, err := common.GetStringListItem(message.Data, 0)
 	if err != nil {
 		return nil, &RouterError{Message: err.Error()}
@@ -199,14 +199,14 @@ func handleWaitModuleLogin(message *GSMessage, client *Client) (*GSMessage, GSEr
 	client.Player = player
 	client.Server.Players.Add(player)
 
-	response := NewGSMessageFromRequest(message)
-	response.Property = PROPERTY_GS
+	response := common.NewGSMessageFromRequest(message)
+	response.Property = common.GSM_PROPERTY_GS
 	response.Type = GSM_GSSUCCESS
 	response.Data = []interface{}{common.WriteU8(GSM_LOGINWAITMODULE)}
 	return response, nil
 }
 
-func handlePlayerInfo(message *GSMessage, client *Client) (*GSMessage, GSError) {
+func handlePlayerInfo(message *common.GSMessage, client *Client) (*common.GSMessage, GSError) {
 	targetName, err := common.GetStringListItem(message.Data, 0)
 	if err != nil {
 		return nil, &RouterError{Message: err.Error()}
@@ -232,13 +232,13 @@ func handlePlayerInfo(message *GSMessage, client *Client) (*GSMessage, GSError) 
 		player.Info.Country, player.Info.Email, "IRCID", player.IpAddress(),
 	}
 
-	response := NewGSMessageFromRequest(message)
+	response := common.NewGSMessageFromRequest(message)
 	response.Type = GSM_GSSUCCESS
 	response.Data = []interface{}{common.WriteU8(GSM_PLAYERINFO), playerData}
 	return response, nil
 }
 
-func handleLobbyMessage(message *GSMessage, client *Client) (*GSMessage, GSError) {
+func handleLobbyMessage(message *common.GSMessage, client *Client) (*common.GSMessage, GSError) {
 	subTypeString, err := common.GetStringListItem(message.Data, 0)
 	if err != nil {
 		return nil, &LobbyError{Message: err.Error()}
@@ -258,7 +258,7 @@ func handleLobbyMessage(message *GSMessage, client *Client) (*GSMessage, GSError
 	return handler(message, client)
 }
 
-func handleLobbyLogin(message *GSMessage, client *Client) (*GSMessage, GSError) {
+func handleLobbyLogin(message *common.GSMessage, client *Client) (*common.GSMessage, GSError) {
 	requestArgs, err := common.GetListItem(message.Data, 1)
 	if err != nil {
 		return nil, &LobbyError{Message: err.Error()}
@@ -277,7 +277,7 @@ func handleLobbyLogin(message *GSMessage, client *Client) (*GSMessage, GSError) 
 	}
 
 	client.Player.Game = gameName
-	response := NewGSMessageFromRequest(message)
+	response := common.NewGSMessageFromRequest(message)
 	response.Data = []interface{}{
 		strconv.Itoa(GSM_GSSUCCESS),
 		[]interface{}{strconv.Itoa(LOBBY_LOGIN)},
@@ -286,7 +286,7 @@ func handleLobbyLogin(message *GSMessage, client *Client) (*GSMessage, GSError) 
 	return response, nil
 }
 
-func handleFriendsLogin(message *GSMessage, client *Client) (*GSMessage, GSError) {
+func handleFriendsLogin(message *common.GSMessage, client *Client) (*common.GSMessage, GSError) {
 	status, err := common.GetU32ListItem(message.Data, 0)
 	if err != nil {
 		return nil, &RouterError{Message: err.Error()}
@@ -304,15 +304,15 @@ func handleFriendsLogin(message *GSMessage, client *Client) (*GSMessage, GSError
 	client.Player.Friends.List = NewPlayerCollection()
 	client.Player.Friends.Ignored = NewPlayerCollection()
 
-	response := NewGSMessageFromRequest(message)
+	response := common.NewGSMessageFromRequest(message)
 	response.Type = GSM_GSSUCCESS
 	response.Data = []interface{}{common.WriteU8(GSM_LOGINFRIENDS)}
 	return response, nil
 }
 
-func handleMotdRequest(message *GSMessage, client *Client) (*GSMessage, GSError) {
+func handleMotdRequest(message *common.GSMessage, client *Client) (*common.GSMessage, GSError) {
 	// language, err := common.GetStringListItem(message.Data, 0)
-	response := NewGSMessageFromRequest(message)
+	response := common.NewGSMessageFromRequest(message)
 	response.Type = GSM_GSSUCCESS
 	response.Data = []interface{}{
 		common.WriteU8(GSM_MOTD_REQUEST),

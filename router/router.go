@@ -22,7 +22,7 @@ type Client struct {
 	Conn   net.Conn
 	Server *Router
 	Player *Player
-	State  *GSClientState
+	State  *common.GSClientState
 }
 
 func (router *Router) Serve() {
@@ -56,13 +56,13 @@ func (router *Router) HandleClient(conn net.Conn) {
 	client := &Client{
 		Conn:   conn,
 		Server: router,
-		State:  &GSClientState{},
+		State:  &common.GSClientState{},
 	}
 
 	defer router.OnDisconnect(client)
 
 	for {
-		msg, err := ReadGSMessage(client.Conn, client.State)
+		msg, err := common.ReadGSMessage(client.Conn, client.State)
 
 		if err == io.EOF {
 			// Client disconnected
@@ -94,7 +94,7 @@ func (router *Router) HandleClient(conn net.Conn) {
 			continue
 		}
 
-		serialized, err := response.Serialize(client)
+		serialized, err := response.Serialize(client.State)
 
 		if err != nil {
 			router.Logger.Error(fmt.Sprintf("Failed to serialize message: %s", err))

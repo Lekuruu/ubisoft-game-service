@@ -1,16 +1,20 @@
-package router
+package common
 
 import (
 	"crypto/rsa"
 	"errors"
 	"fmt"
 	"io"
-
-	"github.com/lekuruu/ubisoft-game-service/common"
 )
 
 const MAX_PACKET_SIZE = 0x50000
 const GSMSG_HEADER_SIZE = 6
+
+const (
+	GSM_PROPERTY_GS         = 0
+	GSM_PROPERTY_GAME       = 1
+	GSM_PROPERTY_GS_ENCRYPT = 2
+)
 
 type GSMessage struct {
 	Size     uint32
@@ -31,13 +35,13 @@ type GSClientState struct {
 }
 
 // Serialize a GSMessage to be sent to the client
-func (msg *GSMessage) Serialize(client *Client) ([]byte, error) {
-	data, err := common.SerializeDataList(msg.Data)
+func (msg *GSMessage) Serialize(state *GSClientState) ([]byte, error) {
+	data, err := SerializeDataList(msg.Data)
 	if err != nil {
 		return nil, err
 	}
 
-	encrypted, err := EncryptDataList(data, msg.Property, client)
+	encrypted, err := EncryptDataList(data, msg.Property, state)
 	if err != nil {
 		return nil, err
 	}
@@ -132,13 +136,13 @@ func NewGSMessageFromRequest(request *GSMessage) *GSMessage {
 }
 
 // Encrypt serialized data list
-func EncryptDataList(data []byte, property uint8, client *Client) ([]byte, error) {
+func EncryptDataList(data []byte, property uint8, state *GSClientState) ([]byte, error) {
 	switch property {
-	case PROPERTY_GS:
-		return common.GSXOREncrypt(data), nil
+	case GSM_PROPERTY_GS:
+		return GSXOREncrypt(data), nil
 
-	case PROPERTY_GS_ENCRYPT:
-		cipher := common.NewBlowfishCipher(client.State.GameBlowfishKey)
+	case GSM_PROPERTY_GS_ENCRYPT:
+		cipher := NewBlowfishCipher(state.GameBlowfishKey)
 		return cipher.Encrypt(data)
 
 	default:
@@ -149,22 +153,22 @@ func EncryptDataList(data []byte, property uint8, client *Client) ([]byte, error
 // Decrypt & deserialize data list
 func DecryptDataList(data []byte, property uint8, state *GSClientState) ([]interface{}, error) {
 	switch property {
-	case PROPERTY_GS_ENCRYPT:
+	case GSM_PROPERTY_GS_ENCRYPT:
 		if state.GameBlowfishKey == nil {
 			return nil, errors.New("blowfish key not initialized")
 		}
-		cipher := common.NewBlowfishCipher(state.GameBlowfishKey)
+		cipher := NewBlowfishCipher(state.GameBlowfishKey)
 		decrypted, err := cipher.Decrypt(data)
 		if err != nil {
 			return nil, err
 		}
-		return common.DeserializeDataList(decrypted)
+		return DeserializeDataList(decrypted)
 
-	case PROPERTY_GS:
-		decrypted := common.GSXORDecrypt(data)
-		return common.DeserializeDataList(decrypted)
+	case GSM_PROPERTY_GS:
+		decrypted := GSXORDecrypt(data)
+		return DeserializeDataList(decrypted)
 
 	default:
-		return common.DeserializeDataList(data)
+		return DeserializeDataList(data)
 	}
 }
