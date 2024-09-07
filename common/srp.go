@@ -1,22 +1,20 @@
-package gsnat
+package common
 
 import (
 	"bytes"
 	"fmt"
-
-	"github.com/lekuruu/ubisoft-game-service/common"
 )
 
-const PACKET_BUFFER_SIZE = 1024
+const SRP_PACKET_BUFFER_SIZE = 1024
 const SRP_HEADER_SIZE = 12
 const SRP_WINDOW_SIZE = 8
 
 const (
-	FLAGS_FIN    = 1
-	FLAGS_SYN    = 2
-	FLAGS_ACK    = 4
-	FLAGS_URG    = 8
-	FLAGS_SRP_ID = 0x3040
+	SRP_FLAGS_FIN    = 1
+	SRP_FLAGS_SYN    = 2
+	SRP_FLAGS_ACK    = 4
+	SRP_FLAGS_URG    = 8
+	SRP_FLAGS_SRP_ID = 0x3040
 )
 
 type SRPWindow struct {
@@ -35,10 +33,10 @@ func (window *SRPWindow) String() string {
 
 func (window *SRPWindow) Serialize() []byte {
 	data := make([]byte, 0)
-	data = append(data, common.WriteU16(window.Tail)...)
-	data = append(data, common.WriteU16(window.SenderSignature)...)
-	data = append(data, common.WriteU16(window.ChecksumInitValue)...)
-	data = append(data, common.WriteU16(window.WndBufferSize)...)
+	data = append(data, WriteU16(window.Tail)...)
+	data = append(data, WriteU16(window.SenderSignature)...)
+	data = append(data, WriteU16(window.ChecksumInitValue)...)
+	data = append(data, WriteU16(window.WndBufferSize)...)
 	return data
 }
 
@@ -61,12 +59,12 @@ func (srp *SRPPacket) String() string {
 
 func (srp *SRPPacket) Serialize() []byte {
 	data := make([]byte, 0)
-	data = append(data, common.WriteU16(srp.Checksum)...)
-	data = append(data, common.WriteU16(srp.Signature)...)
-	data = append(data, common.WriteU16(srp.DataSize)...)
-	data = append(data, common.WriteU16(srp.Flags)...)
-	data = append(data, common.WriteU16(srp.Seg)...)
-	data = append(data, common.WriteU16(srp.Ack)...)
+	data = append(data, WriteU16(srp.Checksum)...)
+	data = append(data, WriteU16(srp.Signature)...)
+	data = append(data, WriteU16(srp.DataSize)...)
+	data = append(data, WriteU16(srp.Flags)...)
+	data = append(data, WriteU16(srp.Seg)...)
+	data = append(data, WriteU16(srp.Ack)...)
 	data = append(data, srp.Window.Serialize()...)
 	return data
 }
@@ -80,12 +78,12 @@ func ReadSRPPacket(reader *bytes.Reader) (*SRPPacket, error) {
 	}
 
 	packet := &SRPPacket{
-		Checksum:  common.ReadU16(header[0:2]),
-		Signature: common.ReadU16(header[2:4]),
-		DataSize:  common.ReadU16(header[4:6]),
-		Flags:     common.ReadU16(header[6:8]),
-		Seg:       common.ReadU16(header[8:10]),
-		Ack:       common.ReadU16(header[10:12]),
+		Checksum:  ReadU16(header[0:2]),
+		Signature: ReadU16(header[2:4]),
+		DataSize:  ReadU16(header[4:6]),
+		Flags:     ReadU16(header[6:8]),
+		Seg:       ReadU16(header[8:10]),
+		Ack:       ReadU16(header[10:12]),
 	}
 
 	if packet.Checksum <= 0 || packet.DataSize <= 0 {
@@ -101,10 +99,10 @@ func ReadSRPPacket(reader *bytes.Reader) (*SRPPacket, error) {
 	}
 
 	packet.Window = SRPWindow{
-		Tail:              common.ReadU16(windowHeader[0:2]),
-		SenderSignature:   common.ReadU16(windowHeader[2:4]),
-		ChecksumInitValue: common.ReadU16(windowHeader[4:6]),
-		WndBufferSize:     common.ReadU16(windowHeader[6:8]),
+		Tail:              ReadU16(windowHeader[0:2]),
+		SenderSignature:   ReadU16(windowHeader[2:4]),
+		ChecksumInitValue: ReadU16(windowHeader[4:6]),
+		WndBufferSize:     ReadU16(windowHeader[6:8]),
 	}
 
 	return packet, nil
@@ -115,7 +113,7 @@ func NewSRPPacketFromRequest(request *SRPPacket) SRPPacket {
 		Checksum:  request.Window.ChecksumInitValue,
 		Signature: request.Window.SenderSignature,
 		DataSize:  SRP_WINDOW_SIZE,
-		Flags:     FLAGS_SRP_ID | FLAGS_SYN | FLAGS_ACK,
+		Flags:     SRP_FLAGS_SRP_ID | SRP_FLAGS_SYN | SRP_FLAGS_ACK,
 		Seg:       request.Seg + 1,
 		Ack:       request.Seg,
 	}
@@ -145,7 +143,7 @@ func makeChecksum(data []byte) uint16 {
 
 	if halfLen > 0 {
 		for i := 0; i < halfLen; i++ {
-			checkBase += uint32(common.ReadU16(data[truncPos:]))
+			checkBase += uint32(ReadU16(data[truncPos:]))
 			truncPos += 2
 		}
 	}

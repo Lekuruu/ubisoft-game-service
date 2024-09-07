@@ -35,7 +35,7 @@ func (gsn *GSNatServer) Serve() {
 	defer listener.Close()
 
 	for {
-		buffer := make([]byte, PACKET_BUFFER_SIZE)
+		buffer := make([]byte, common.SRP_PACKET_BUFFER_SIZE)
 		_, addr, err := listener.ReadFrom(buffer)
 
 		if err != nil {
@@ -56,7 +56,7 @@ func (cdks *GSNatServer) HandleClient(client *Client) {
 	defer cdks.HandlePanic(client)
 
 	for {
-		srp, err := ReadSRPPacket(client.Reader)
+		srp, err := common.ReadSRPPacket(client.Reader)
 
 		if srp == nil {
 			break
@@ -82,12 +82,12 @@ func (cdks *GSNatServer) HandlePanic(client *Client) {
 	}
 }
 
-func HandlePacket(client *Client, packet *SRPPacket) {
-	if packet.Flags&FLAGS_SYN == 0 {
+func HandlePacket(client *Client, packet *common.SRPPacket) {
+	if packet.Flags&common.SRP_FLAGS_SYN == 0 {
 		return
 	}
 
-	response := NewSRPPacketFromRequest(packet)
+	response := common.NewSRPPacketFromRequest(packet)
 
 	_, err := client.Server.Listener.WriteTo(response.Serialize(), client.Address)
 	if err != nil {
