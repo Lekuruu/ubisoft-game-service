@@ -7,7 +7,7 @@ import (
 	"github.com/lekuruu/ubisoft-game-service/common"
 )
 
-const PACKET_BUFFER_SIZE = 512
+const CDKM_PACKET_BUFFER_SIZE = 512
 const CDKM_HEADER_SIZE = 5
 
 const (
@@ -26,8 +26,8 @@ const (
 	CDKM_STILL_ALIVE     = 7
 )
 
-var BlowfishKey = []byte("SKJDHF$0maoijfn4i8$aJdnv1jaldifar93-AS_dfo;hjhC4jhflasnF3fnd")
-var Blowfish = common.NewBlowfishCipher(BlowfishKey)
+var blowfishKey = []byte("SKJDHF$0maoijfn4i8$aJdnv1jaldifar93-AS_dfo;hjhC4jhflasnF3fnd")
+var blowfish = common.NewBlowfishCipher(blowfishKey)
 
 type CDKeyMessage struct {
 	Type uint8
@@ -41,7 +41,7 @@ func (msg *CDKeyMessage) Serialize() ([]byte, error) {
 		return nil, err
 	}
 
-	encrypted, err := Blowfish.Encrypt(dataList)
+	encrypted, err := blowfish.Encrypt(dataList)
 	if err != nil {
 		return nil, err
 	}
@@ -79,7 +79,7 @@ func ReadCDKeyMessage(reader *bytes.Reader) (*CDKeyMessage, error) {
 		return nil, nil
 	}
 
-	if msg.Size > PACKET_BUFFER_SIZE {
+	if msg.Size > CDKM_PACKET_BUFFER_SIZE {
 		return nil, fmt.Errorf("requested size too large: %d", msg.Size)
 	}
 
@@ -90,7 +90,7 @@ func ReadCDKeyMessage(reader *bytes.Reader) (*CDKeyMessage, error) {
 		return nil, err
 	}
 
-	decrypted, err := Blowfish.Decrypt(data)
+	decrypted, err := blowfish.Decrypt(data)
 
 	if err != nil {
 		return nil, err
