@@ -8,8 +8,8 @@ import (
 const CDKM_PACKET_BUFFER_SIZE = 512
 const CDKM_HEADER_SIZE = 5
 
-var blowfishKey = []byte("SKJDHF$0maoijfn4i8$aJdnv1jaldifar93-AS_dfo;hjhC4jhflasnF3fnd")
-var blowfish = NewBlowfishCipher(blowfishKey)
+var blowfishKeyCd = []byte("SKJDHF$0maoijfn4i8$aJdnv1jaldifar93-AS_dfo;hjhC4jhflasnF3fnd")
+var blowfishCD = NewBlowfishCipher(blowfishKeyCd)
 
 type CDKeyMessage struct {
 	Type uint8
@@ -23,7 +23,7 @@ func (msg *CDKeyMessage) Serialize() ([]byte, error) {
 		return nil, err
 	}
 
-	encrypted, err := blowfish.Encrypt(dataList)
+	encrypted, err := blowfishCD.Encrypt(dataList)
 	if err != nil {
 		return nil, err
 	}
@@ -72,7 +72,7 @@ func ReadCDKeyMessage(reader *bytes.Reader) (*CDKeyMessage, error) {
 		return nil, err
 	}
 
-	decrypted, err := blowfish.Decrypt(data)
+	decrypted, err := blowfishCD.Decrypt(data)
 
 	if err != nil {
 		return nil, err
