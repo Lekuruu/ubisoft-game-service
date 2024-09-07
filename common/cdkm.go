@@ -1,33 +1,15 @@
-package cdkey
+package common
 
 import (
 	"bytes"
 	"fmt"
-
-	"github.com/lekuruu/ubisoft-game-service/common"
 )
 
 const CDKM_PACKET_BUFFER_SIZE = 512
 const CDKM_HEADER_SIZE = 5
 
-const (
-	CDKM_E_PLAYER_UNKNOWN = 0
-	CDKM_E_PLAYER_INVALID = 1
-	CDKM_E_PLAYER_VALID   = 2
-)
-
-const (
-	CDKM_CHALLENGE       = 1
-	CDKM_ACTIVATION      = 2
-	CDKM_AUTH            = 3
-	CDKM_VALIDATION      = 4
-	CDKM_PLAYER_STATUS   = 5
-	CDKM_DISCONNECT_USER = 6
-	CDKM_STILL_ALIVE     = 7
-)
-
 var blowfishKey = []byte("SKJDHF$0maoijfn4i8$aJdnv1jaldifar93-AS_dfo;hjhC4jhflasnF3fnd")
-var blowfish = common.NewBlowfishCipher(blowfishKey)
+var blowfish = NewBlowfishCipher(blowfishKey)
 
 type CDKeyMessage struct {
 	Type uint8
@@ -36,7 +18,7 @@ type CDKeyMessage struct {
 }
 
 func (msg *CDKeyMessage) Serialize() ([]byte, error) {
-	dataList, err := common.SerializeDataList(msg.Data)
+	dataList, err := SerializeDataList(msg.Data)
 	if err != nil {
 		return nil, err
 	}
@@ -48,8 +30,8 @@ func (msg *CDKeyMessage) Serialize() ([]byte, error) {
 
 	msg.Size = uint32(len(encrypted))
 	data := make([]byte, 0)
-	data = append(data, common.WriteU8(msg.Type)...)
-	data = append(data, common.WriteU32BE(msg.Size)...)
+	data = append(data, WriteU8(msg.Type)...)
+	data = append(data, WriteU32BE(msg.Size)...)
 	data = append(data, encrypted...)
 	return data, nil
 }
@@ -71,7 +53,7 @@ func ReadCDKeyMessage(reader *bytes.Reader) (*CDKeyMessage, error) {
 
 	msg := &CDKeyMessage{
 		Type: header[0],
-		Size: common.ReadU32BE(header[1:5]),
+		Size: ReadU32BE(header[1:5]),
 	}
 
 	if msg.Size == 0 || msg.Type == 0 {
@@ -96,7 +78,7 @@ func ReadCDKeyMessage(reader *bytes.Reader) (*CDKeyMessage, error) {
 		return nil, err
 	}
 
-	dataList, err := common.DeserializeDataList(decrypted)
+	dataList, err := DeserializeDataList(decrypted)
 
 	if err != nil {
 		return nil, err

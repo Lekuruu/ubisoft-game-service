@@ -36,7 +36,7 @@ func (cdks *CDKeyServer) Serve() {
 	defer listener.Close()
 
 	for {
-		buffer := make([]byte, CDKM_PACKET_BUFFER_SIZE)
+		buffer := make([]byte, common.CDKM_PACKET_BUFFER_SIZE)
 		_, addr, err := listener.ReadFrom(buffer)
 
 		if err != nil {
@@ -57,7 +57,7 @@ func (cdks *CDKeyServer) HandleClient(client *Client) {
 	defer cdks.HandlePanic(client)
 
 	for {
-		msg, err := ReadCDKeyMessage(client.Reader)
+		msg, err := common.ReadCDKeyMessage(client.Reader)
 
 		if err == io.EOF {
 			break

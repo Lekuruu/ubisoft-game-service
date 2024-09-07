@@ -8,10 +8,10 @@ import (
 )
 
 // A map to store the handlers for each message type
-var CDKeyHandlers = map[int]func(*CDKeyMessage, *Client) (*CDKeyMessage, error){}
+var CDKeyHandlers = map[int]func(*common.CDKeyMessage, *Client) (*common.CDKeyMessage, error){}
 
-func handleChallenge(msg *CDKeyMessage, client *Client) (*CDKeyMessage, error) {
-	response := NewCDKeyMessageFromRequest(msg)
+func handleChallenge(msg *common.CDKeyMessage, client *Client) (*common.CDKeyMessage, error) {
+	response := common.NewCDKeyMessageFromRequest(msg)
 	hash := []byte{
 		0x00, 0x11, 0x22, 0x33,
 		0x44, 0x55, 0x66, 0x77,
@@ -26,8 +26,8 @@ func handleChallenge(msg *CDKeyMessage, client *Client) (*CDKeyMessage, error) {
 	return response, nil
 }
 
-func handleActivation(msg *CDKeyMessage, client *Client) (*CDKeyMessage, error) {
-	response := NewCDKeyMessageFromRequest(msg)
+func handleActivation(msg *common.CDKeyMessage, client *Client) (*common.CDKeyMessage, error) {
+	response := common.NewCDKeyMessageFromRequest(msg)
 	activationId := []byte{
 		0x33, 0x33, 0x33, 0x33, 0x33, 0x33,
 		0x33, 0x33, 0x33, 0x33, 0x33,
@@ -46,8 +46,8 @@ func handleActivation(msg *CDKeyMessage, client *Client) (*CDKeyMessage, error) 
 	return response, nil
 }
 
-func handleAuth(msg *CDKeyMessage, client *Client) (*CDKeyMessage, error) {
-	response := NewCDKeyMessageFromRequest(msg)
+func handleAuth(msg *common.CDKeyMessage, client *Client) (*common.CDKeyMessage, error) {
+	response := common.NewCDKeyMessageFromRequest(msg)
 	authId := []byte{
 		0x55, 0x55, 0x55, 0x55, 0x55, 0x55,
 		0x55, 0x55, 0x55, 0x55, 0x55,
@@ -59,8 +59,8 @@ func handleAuth(msg *CDKeyMessage, client *Client) (*CDKeyMessage, error) {
 	return response, nil
 }
 
-func handleValidation(msg *CDKeyMessage, client *Client) (*CDKeyMessage, error) {
-	response := NewCDKeyMessageFromRequest(msg)
+func handleValidation(msg *common.CDKeyMessage, client *Client) (*common.CDKeyMessage, error) {
+	response := common.NewCDKeyMessageFromRequest(msg)
 	status := CDKM_E_PLAYER_VALID
 	buffer := []byte{
 		0x66, 0x66, 0x66, 0x66, 0x66, 0x66,
