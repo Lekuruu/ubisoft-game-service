@@ -1,6 +1,7 @@
 package gsnat
 
 import (
+	"bytes"
 	"fmt"
 
 	"github.com/lekuruu/ubisoft-game-service/common"
@@ -70,9 +71,9 @@ func (srp *SRPPacket) Serialize() []byte {
 	return data
 }
 
-func ReadSRPPacket(client *Client) (*SRPPacket, error) {
+func ReadSRPPacket(reader *bytes.Reader) (*SRPPacket, error) {
 	header := make([]byte, SRP_HEADER_SIZE)
-	_, err := client.Reader.Read(header)
+	_, err := reader.Read(header)
 
 	if err != nil {
 		return nil, err
@@ -93,7 +94,7 @@ func ReadSRPPacket(client *Client) (*SRPPacket, error) {
 	}
 
 	windowHeader := make([]byte, SRP_WINDOW_SIZE)
-	_, err = client.Reader.Read(windowHeader)
+	_, err = reader.Read(windowHeader)
 
 	if err != nil {
 		return nil, err

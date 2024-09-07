@@ -56,7 +56,7 @@ func (cdks *GSNatServer) HandleClient(client *Client) {
 	defer cdks.HandlePanic(client)
 
 	for {
-		srp, err := ReadSRPPacket(client)
+		srp, err := ReadSRPPacket(&client.Reader)
 
 		if srp == nil {
 			break
