@@ -6,7 +6,6 @@ import (
 	"io"
 	"log"
 	"net"
-	"strconv"
 
 	"github.com/lekuruu/ubisoft-game-service/common"
 )
@@ -77,13 +76,7 @@ func (cdks *CDKeyServer) HandleClient(client *Client) {
 			break
 		}
 
-		requestTypeString, err := common.GetStringListItem(msg.Data, 1)
-		if err != nil {
-			cdks.Logger.Error(fmt.Sprintf("Failed to parse message ID: %s", err))
-			break
-		}
-
-		requestType, err := strconv.Atoi(requestTypeString)
+		requestType, err := common.GetIntListItem(msg.Data, 1)
 		if err != nil {
 			cdks.Logger.Error(fmt.Sprintf("Failed to parse message ID: %s", err))
 			break

@@ -239,12 +239,7 @@ func handlePlayerInfo(message *common.GSMessage, client *Client) (*common.GSMess
 }
 
 func handleLobbyMessage(message *common.GSMessage, client *Client) (*common.GSMessage, GSError) {
-	subTypeString, err := common.GetStringListItem(message.Data, 0)
-	if err != nil {
-		return nil, &LobbyError{Message: err.Error()}
-	}
-
-	subType, err := strconv.Atoi(subTypeString)
+	subType, err := common.GetIntListItem(message.Data, 0)
 	if err != nil {
 		return nil, &LobbyError{Message: err.Error()}
 	}

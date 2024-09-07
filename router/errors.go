@@ -56,8 +56,7 @@ func (e *LobbyError) Code() int {
 }
 
 func (e *LobbyError) Response(request *common.GSMessage) *common.GSMessage {
-	subTypeString, _ := common.GetStringListItem(request.Data, 0)
-	subType, _ := strconv.Atoi(subTypeString)
+	subType, _ := common.GetIntListItem(request.Data, 0)
 
 	return &common.GSMessage{
 		Type:     GSM_LOBBY_MSG,
