@@ -19,7 +19,7 @@ type CDKeyServer struct {
 
 type Client struct {
 	Address net.Addr
-	Reader  bytes.Reader
+	Reader  *bytes.Reader
 	Server  *CDKeyServer
 }
 
@@ -44,7 +44,7 @@ func (cdks *CDKeyServer) Serve() {
 		}
 
 		client := &Client{
-			Reader:  *bytes.NewReader(buffer),
+			Reader:  bytes.NewReader(buffer),
 			Address: addr,
 			Server:  cdks,
 		}
@@ -57,7 +57,7 @@ func (cdks *CDKeyServer) HandleClient(client *Client) {
 	defer cdks.HandlePanic(client)
 
 	for {
-		msg, err := ReadCDKeyMessage(client)
+		msg, err := ReadCDKeyMessage(client.Reader)
 
 		if err == io.EOF {
 			break

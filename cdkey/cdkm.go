@@ -1,6 +1,7 @@
 package cdkey
 
 import (
+	"bytes"
 	"fmt"
 
 	"github.com/lekuruu/ubisoft-game-service/common"
@@ -60,9 +61,9 @@ func (msg *CDKeyMessage) String() string {
 	)
 }
 
-func ReadCDKeyMessage(client *Client) (*CDKeyMessage, error) {
+func ReadCDKeyMessage(reader *bytes.Reader) (*CDKeyMessage, error) {
 	header := make([]byte, CDKM_HEADER_SIZE)
-	_, err := client.Reader.Read(header)
+	_, err := reader.Read(header)
 
 	if err != nil {
 		return nil, err
@@ -83,7 +84,7 @@ func ReadCDKeyMessage(client *Client) (*CDKeyMessage, error) {
 	}
 
 	data := make([]byte, msg.Size)
-	_, err = client.Reader.Read(data)
+	_, err = reader.Read(data)
 
 	if err != nil {
 		return nil, err
