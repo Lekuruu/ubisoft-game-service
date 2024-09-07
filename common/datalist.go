@@ -3,6 +3,7 @@ package common
 import (
 	"errors"
 	"fmt"
+	"strconv"
 )
 
 // SerializeString serializes a string into a byte buffer
@@ -187,6 +188,22 @@ func GetBoolListItem(data []interface{}, index int) (bool, error) {
 	}
 
 	return bin[0] == 1, nil
+}
+
+func GetIntListItem(data []interface{}, index int) (int, error) {
+	bin, err := GetStringListItem(data, index)
+
+	if err != nil {
+		return 0, err
+	}
+
+	integer, err := strconv.Atoi(bin)
+
+	if err != nil {
+		return 0, err
+	}
+
+	return integer, nil
 }
 
 func GetU32ListItem(data []interface{}, index int) (uint32, error) {
