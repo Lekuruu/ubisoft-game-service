@@ -18,7 +18,7 @@ type GSNatServer struct {
 
 type Client struct {
 	Address net.Addr
-	Reader  bytes.Reader
+	Reader  *bytes.Reader
 	Server  *GSNatServer
 }
 
@@ -43,7 +43,7 @@ func (gsn *GSNatServer) Serve() {
 		}
 
 		client := &Client{
-			Reader:  *bytes.NewReader(buffer),
+			Reader:  bytes.NewReader(buffer),
 			Address: addr,
 			Server:  gsn,
 		}
@@ -56,7 +56,7 @@ func (cdks *GSNatServer) HandleClient(client *Client) {
 	defer cdks.HandlePanic(client)
 
 	for {
-		srp, err := ReadSRPPacket(&client.Reader)
+		srp, err := ReadSRPPacket(client.Reader)
 
 		if srp == nil {
 			break
