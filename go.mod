@@ -4,9 +4,10 @@ go 1.22.6
 
 require (
 	github.com/lekuruu/ubisoft-game-service/cdkey v0.0.0-20240831105814-85a1b7e9b455
-	github.com/lekuruu/ubisoft-game-service/common v0.0.0-20240831105814-85a1b7e9b455
+	github.com/lekuruu/ubisoft-game-service/common v0.0.0-20240903164514-d09c91206a13
 	github.com/lekuruu/ubisoft-game-service/gsconnect v0.0.0-20240831105814-85a1b7e9b455
 	github.com/lekuruu/ubisoft-game-service/gsnat v0.0.0-20240831105814-85a1b7e9b455
+	github.com/lekuruu/ubisoft-game-service/irc v0.0.0-00010101000000-000000000000
 	github.com/lekuruu/ubisoft-game-service/router v0.0.0-20240831105814-85a1b7e9b455
 )
 

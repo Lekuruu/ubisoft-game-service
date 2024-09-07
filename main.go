@@ -11,6 +11,7 @@ import (
 	"github.com/lekuruu/ubisoft-game-service/common"
 	"github.com/lekuruu/ubisoft-game-service/gsconnect"
 	"github.com/lekuruu/ubisoft-game-service/gsnat"
+	"github.com/lekuruu/ubisoft-game-service/irc"
 	"github.com/lekuruu/ubisoft-game-service/router"
 )
 
@@ -20,6 +21,10 @@ type Config struct {
 		Port int
 	}
 	Router struct {
+		Host string
+		Port int
+	}
+	IRC struct {
 		Host string
 		Port int
 	}
@@ -43,7 +48,7 @@ func (c *Config) createGameConfig() map[string]string {
 		fmt.Sprintf("NATServerIP0=%s", c.ExternalHost),
 		fmt.Sprintf("NATServerPort0=%d", c.NAT.Port),
 		fmt.Sprintf("IRCIP0=%s", c.ExternalHost),
-		fmt.Sprintf("IRCPort0=%d", 6668),
+		fmt.Sprintf("IRCPort0=%d", c.IRC.Port),
 		fmt.Sprintf("ProxyIP0=%s", c.ExternalHost),
 		fmt.Sprintf("ProxyPort0=%d", 4040),
 	}
@@ -65,6 +70,9 @@ func loadConfig() (*Config, error) {
 
 	flag.StringVar(&config.Router.Host, "router-host", "0.0.0.0", "Router server host")
 	flag.IntVar(&config.Router.Port, "router-port", 40000, "Router server port")
+
+	flag.StringVar(&config.IRC.Host, "irc-host", "0.0.0.0", "IRC server host")
+	flag.IntVar(&config.IRC.Port, "irc-port", 6668, "IRC server port")
 
 	flag.IntVar(&config.NAT.Port, "nat-port", 45000, "NAT server port")
 	flag.IntVar(&config.CDKey.Port, "cdkey-port", 44000, "CDKey server port")
@@ -125,6 +133,12 @@ func main() {
 		Games:  config.Games,
 	}
 
+	irc := irc.IRCServer{
+		Host:   config.IRC.Host,
+		Port:   uint16(config.IRC.Port),
+		Logger: *common.CreateLogger("IRCServer", common.DEBUG),
+	}
+
 	cdks := cdkey.CDKeyServer{
 		Port:   uint16(config.CDKey.Port),
 		Logger: *common.CreateLogger("CDKeyServer", common.DEBUG),
@@ -139,6 +153,7 @@ func main() {
 
 	runService(&wg, router.Serve)
 	runService(&wg, cdks.Serve)
+	runService(&wg, irc.Serve)
 	runService(&wg, nat.Serve)
 	runService(&wg, gsc.Serve)
 
