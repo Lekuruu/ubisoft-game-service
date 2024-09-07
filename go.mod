@@ -21,3 +21,5 @@ replace github.com/lekuruu/ubisoft-game-service/gsconnect => ./gsconnect
 replace github.com/lekuruu/ubisoft-game-service/gsnat => ./gsnat
 
 replace github.com/lekuruu/ubisoft-game-service/router => ./router
+
+replace github.com/lekuruu/ubisoft-game-service/irc => ./irc
