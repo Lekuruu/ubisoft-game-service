@@ -305,6 +305,26 @@ func handleFriendsLogin(message *common.GSMessage, client *Client) (*common.GSMe
 	return response, nil
 }
 
+func handleIgnoreListRequest(message *common.GSMessage, client *Client) (*common.GSMessage, GSError) {
+	ignoredPlayers := client.Player.Friends.Ignored.All()
+	ignoredPlayersResponse := []interface{}{}
+
+	for _, player := range ignoredPlayers {
+		ignoredPlayersResponse = append(
+			ignoredPlayersResponse,
+			player.Name,
+		)
+	}
+
+	response := common.NewGSMessageFromRequest(message)
+	response.Type = GSM_GSSUCCESS
+	response.Data = []interface{}{
+		common.WriteU8(GSM_IGNORELIST),
+		ignoredPlayersResponse,
+	}
+	return response, nil
+}
+
 func handleMotdRequest(message *common.GSMessage, client *Client) (*common.GSMessage, GSError) {
 	// language, err := common.GetStringListItem(message.Data, 0)
 	response := common.NewGSMessageFromRequest(message)
@@ -328,6 +348,7 @@ func init() {
 	RouterHandlers[GSM_PLAYERINFO] = handlePlayerInfo
 	RouterHandlers[GSM_LOBBY_MSG] = handleLobbyMessage
 	RouterHandlers[GSM_LOGINFRIENDS] = handleFriendsLogin
+	RouterHandlers[GSM_IGNORELIST] = handleIgnoreListRequest
 	RouterHandlers[GSM_MOTD_REQUEST] = handleMotdRequest
 
 	LobbyHandlers[LOBBY_LOGIN] = handleLobbyLogin
