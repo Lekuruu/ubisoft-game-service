@@ -12,6 +12,7 @@ import (
 	"github.com/lekuruu/ubisoft-game-service/gsconnect"
 	"github.com/lekuruu/ubisoft-game-service/gsnat"
 	"github.com/lekuruu/ubisoft-game-service/irc"
+	"github.com/lekuruu/ubisoft-game-service/proxy"
 	"github.com/lekuruu/ubisoft-game-service/router"
 )
 
@@ -21,6 +22,10 @@ type Config struct {
 		Port int
 	}
 	Router struct {
+		Host string
+		Port int
+	}
+	Proxy struct {
 		Host string
 		Port int
 	}
@@ -50,7 +55,7 @@ func (c *Config) createGameConfig() map[string]string {
 		fmt.Sprintf("IRCIP0=%s", c.ExternalHost),
 		fmt.Sprintf("IRCPort0=%d", c.IRC.Port),
 		fmt.Sprintf("ProxyIP0=%s", c.ExternalHost),
-		fmt.Sprintf("ProxyPort0=%d", 4040),
+		fmt.Sprintf("ProxyPort0=%d", c.Proxy.Port),
 	}
 
 	games := make(map[string]string)
@@ -70,6 +75,9 @@ func loadConfig() (*Config, error) {
 
 	flag.StringVar(&config.Router.Host, "router-host", "0.0.0.0", "Router server host")
 	flag.IntVar(&config.Router.Port, "router-port", 40000, "Router server port")
+
+	flag.StringVar(&config.Proxy.Host, "proxy-host", "0.0.0.0", "Proxy server host")
+	flag.IntVar(&config.Proxy.Port, "proxy-port", 4040, "Proxy server port")
 
 	flag.StringVar(&config.IRC.Host, "irc-host", "0.0.0.0", "IRC server host")
 	flag.IntVar(&config.IRC.Port, "irc-port", 6668, "IRC server port")
@@ -133,25 +141,32 @@ func main() {
 		Games:  config.Games,
 	}
 
+	proxy := proxy.Proxy{
+		Host:   config.Proxy.Host,
+		Port:   uint16(config.Proxy.Port),
+		Logger: *common.CreateLogger("Proxy", common.DEBUG),
+	}
+
 	irc := irc.IRCServer{
 		Host:   config.IRC.Host,
 		Port:   uint16(config.IRC.Port),
-		Logger: *common.CreateLogger("IRCServer", common.DEBUG),
+		Logger: *common.CreateLogger("IRC", common.DEBUG),
 	}
 
 	cdks := cdkey.CDKeyServer{
 		Port:   uint16(config.CDKey.Port),
-		Logger: *common.CreateLogger("CDKeyServer", common.DEBUG),
+		Logger: *common.CreateLogger("CDKey", common.DEBUG),
 	}
 
 	nat := gsnat.GSNatServer{
 		Port:   uint16(config.NAT.Port),
-		Logger: *common.CreateLogger("GSNatServer", common.DEBUG),
+		Logger: *common.CreateLogger("GSNat", common.DEBUG),
 	}
 
 	var wg sync.WaitGroup
 
 	runService(&wg, router.Serve)
+	runService(&wg, proxy.Serve)
 	runService(&wg, cdks.Serve)
 	runService(&wg, irc.Serve)
 	runService(&wg, nat.Serve)
